@@ -1,0 +1,833 @@
+1. Registro e Login de Usuário 
+
+POST /api/register
+usuário: admin //o primeiro cadastro é público, e cria uma rota de admin automaticamente
+
+
+{
+    "name": "Admin",
+    "email": "admin@example.com",
+    "password": "senha123",
+    "password_confirmation": "senha123",
+    "telefone": "923456789",
+    "tipo": "admin"  // Será forçado como admin mesmo se enviar outro tipo
+}
+
+
+criar outros usuários querer token do admin:
+// Criar um médico
+POST /api/register
+Headers:
+{
+    "Authorization": "Bearer {token_do_admin}",
+    "Content-Type": "application/json"
+}
+Body:
+{
+    "name": "Dr. João Silva",
+    "email": "joao.silva@saude.gov.ao",
+    "password": "senha@123",
+    "password_confirmation": "senha@123",
+    "telefone": "923456788",
+    "tipo": "medico"
+}
+
+
+// Criar um gestor
+POST /api/register
+Headers:
+{
+    "Authorization": "Bearer {token_do_admin}",
+    "Content-Type": "application/json"
+}
+Body:
+{
+    "name": "Maria Gestora",
+    "email": "maria.gestora@saude.gov.ao",
+    "password": "senha@123",
+    "password_confirmation": "senha@123",
+    "telefone": "923456787",
+    "tipo": "gestor"
+}
+
+
+// Criar um técnico
+POST /api/register
+Headers:
+{
+    "Authorization": "Bearer {token_do_admin}",
+    "Content-Type": "application/json"
+}
+Body:
+{
+    "name": "Pedro Técnico",
+    "email": "pedro.tecnico@saude.gov.ao",
+    "password": "senha@123",
+    "password_confirmation": "senha@123",
+    "telefone": "923456786",
+    "tipo": "tecnico"
+}
+
+
+
+
+// 1.2 Login
+POST /api/login
+{
+    "email": "joao.silva@example.com",
+    "password": "senha123"
+}
+
+
+________________
+2. Cadastro de Estruturas de Saúde
+
+usuário: Admin
+
+
+// 2.1 Cadastro de Gabinete Provincial
+POST /api/gabinetes-provinciais
+Headers: {
+    "Authorization": "Bearer {seu_token}",
+    "Content-Type": "application/json"
+}
+{
+    "nome": "Gabinete Provincial de Saúde de Luanda",
+    "provincia": "Luanda",
+    "endereco": "Rua Principal, 123",
+    "telefone": "923111222",
+    "email": "gps.luanda@example.com",
+    "diretor": "Dr. Manuel Santos",
+    "observacoes": "Gabinete central da província"
+}
+
+
+
+// 2.2 Cadastro de Direção Municipal
+POST /api/direcao-municipal
+Headers: {
+    "Authorization": "Bearer {seu_token}",
+    "Content-Type": "application/json"
+}
+{
+    "gabinete_provincial_id": 1,
+    "nome": "Direção Municipal de Saúde de Viana",
+    "municipio": "Viana",
+    "endereco": "Avenida Principal, 456",
+    "telefone": "923333444",
+    "email": "dms.viana@example.com",
+    "diretor": "Dra. Ana Costa",
+    "observacoes": "Direção responsável pelo município de Viana"
+}
+
+
+________________
+
+
+// 2.3 Cadastro de Hospital
+POST /api/hospitais
+Headers: {
+    "Authorization": "Bearer {seu_token}",
+    "Content-Type": "application/json"
+}
+Body: {
+    "nome": "Hospital Geral de Luanda",
+    "tipo": "geral",
+    "endereco": "Rua Principal, Luanda",
+    "latitude": -8.838333,
+    "longitude": 13.234444,
+    "telefone": "923456789",
+    "email": "hgl@saude.gov.ao",
+    "diretor": "Dr. António Santos",
+    "leitos_totais": 200,
+    "leitos_disponiveis": 45,
+    "ponto_emergencia": true,
+    "servicos_emergencia": "UTI, Centro Cirúrgico, Trauma, Emergências Respiratórias",
+    "capacidade_emergencia": 30,
+    "ativo": true,
+    "direcao_municipal_id": 1
+}
+________________
+
+
+2. Cadastrar ambulâncias:
+usuário: admin, gerente
+
+
+// Ambulância 1
+POST /api/ambulancias
+Headers: {
+    "Authorization": "Bearer {seu_token}",
+    "Content-Type": "application/json"
+}
+Body: {
+    "placa": "LD-23-45-AA",
+    "modelo": "Toyota Hiace Ambulância",
+    "hospital_id": 1,
+    "status": "disponivel",
+    "latitude": -8.838333,
+    "longitude": 13.234444
+}
+
+
+// Ambulância 2
+POST /api/ambulancias
+Body: {
+    "placa": "LD-23-46-AB",
+    "modelo": "Mercedes Sprinter UTI Móvel",
+    "hospital_id": 1,
+    "status": "disponivel",
+    "latitude": -8.839444,
+    "longitude": 13.235555
+}
+
+
+GET /api/ambulancias
+GET /api/ambulancias?status=disponivel
+GET /api/ambulancias?hospital_id=1
+
+
+Cadastrar nova ambulância:
+POST /api/ambulancias
+{
+    "placa": "LD-23-45-AA",
+    "modelo": "Toyota Hiace Ambulância",
+    "hospital_id": 1,
+    "status": "disponivel",
+    "latitude": -8.838333,
+    "longitude": 13.234444
+}
+
+
+Buscar uma ambulância específica:
+GET /api/ambulancias/1
+________________
+Atualizar ambulância:
+PUT /api/ambulancias/1
+{
+    "status": "em_deslocamento",
+    "latitude": -8.841000,
+    "longitude": 13.237000
+}
+
+
+________________
+-
+3. Cadastro e Triagem de Paciente
+user: admin, gerente, técnico, médico
+// 3.1 Cadastro de Paciente
+POST /api/pacientes
+{
+    "nome": "Maria Joaquina",
+    "bi_numero": "123456789LA123",
+    "telefone": "923777888",
+    "data_nascimento": "1990-05-15",
+    "endereco": "Rua das Flores, 321, Viana",
+    "latitude": -8.9170,
+    "longitude": 13.1670,
+    "genero": "F"
+}
+
+
+// 3.2 Triagem do Paciente
+POST /api/triagens
+{
+    "paciente_id": 1,
+    "sintomas": {
+        "diarreia": true,
+        "vomito": true,
+        "desidratacao": true,
+        "dor_abdominal": true,
+        "fraqueza": true
+    },
+    "nivel_risco": "alto",
+    "observacoes": "Paciente apresenta sintomas graves de cólera"
+}
+
+
+________________
+4. Encaminhamento
+// 4.1 Criar Encaminhamento
+POST /api/encaminhamentos
+{
+    "triagem_id": 1,
+    "hospital_id": 1,
+	"status: pendente, concluido, em andamento"
+    "observacoes": "Encaminhamento urgente devido a sintomas graves"
+}
+
+
+// 4.2 Atualizar Status do Encaminhamento
+PUT /api/encaminhamento/1
+{
+    "status": "concluido",
+    "data_chegada": "2024-03-14T10:30:00"
+}
+
+
+________________
+5. Geração de Relatórios
+usuário: admin, gerente
+// 5.1 Relatório de Casos por Região
+POST /api/relatorios/gerar
+{
+    "tipo": "casos_por_regiao",
+    "periodo_inicio": "2024-03-01",
+    "periodo_fim": "2024-03-14",
+    "formato": "json",
+    "filtros": {
+        "nivel_risco": "alto"
+    }
+}
+
+
+// 5.2 Relatório de Evolução Temporal
+POST /api/relatorios/gerar
+{
+    "tipo": "evolucao_temporal",
+    "periodo_inicio": "2024-03-01",
+    "periodo_fim": "2024-03-14",
+    "formato": "pdf",
+    "filtros": {
+        "hospital_id": 1
+    }
+}
+
+
+// 5.3 Relatório de Ocupação de Hospitais
+POST /api/relatorios/gerar
+{
+    "tipo": "ocupacao_hospitais",
+    "periodo_inicio": "2024-03-01",
+    "periodo_fim": "2024-03-14",
+    "formato": "excel",
+    "filtros": {
+        "status_encaminhamento": "concluido"
+    }
+}
+________________
+
+
+6. Consultas e Filtros
+// 6.1 Listar Triagens com Filtros
+GET /api/triagem?nivel_risco=alto&data_inicio=2024-03-01&data_fim=2024-03-14
+
+
+// 6.2 Listar Hospitais com Leitos Disponíveis
+GET /api/hospitais?com_leitos=true&tipo=municipal
+
+
+// 6.3 Listar Encaminhamentos por Status
+GET /api/encaminhamentos?status=pendente&hospital_id=1
+
+
+
+
+________________
+
+
+?? Rotas Públicas (Não requerem autenticação)
+* POST /api/login — Login para todos os tipos de usuário
+
+________________
+
+
+?? Rotas para Todos os Usuários Autenticados
+   * POST /api/logout — Logout
+
+   * GET /api/me — Informações do usuário logado
+
+________________
+
+
+?? Rotas para Médicos
+      * GET /api/pacientes — Listar pacientes
+
+      * GET /api/pacientes/{id} — Ver detalhes do paciente
+
+      * POST /api/pacientes — Cadastrar paciente
+
+      * PUT /api/pacientes/{id} — Atualizar paciente
+
+      * GET /api/pacientes/{paciente}/triagens — Ver triagens do paciente
+
+      * GET /api/triagens — Listar triagens
+
+      * POST /api/triagens — Realizar triagem
+
+      * GET /api/triagens/{id} — Ver detalhes da triagem
+
+      * GET /api/hospitais/nearby — Ver hospitais próximos
+
+      * GET /api/encaminhamentos — Listar encaminhamentos
+
+      * POST /api/encaminhamentos — Criar encaminhamento
+
+      * GET /api/encaminhamentos/{id} — Ver detalhes do encaminhamento
+
+      * GET /api/ambulancias/disponiveis — Ver ambulâncias disponíveis
+
+________________
+
+
+????? Rotas para Gestores
+         * Todas as rotas do médico
+
+         * GET /api/hospitais — Listar hospitais
+
+         * GET /api/hospitais/{id} — Ver detalhes do hospital
+
+         * GET /api/hospitais/estatisticas — Ver estatísticas dos hospitais
+
+         * GET /api/encaminhamentos/estatisticas — Ver estatísticas de encaminhamentos
+
+         * POST /api/relatorios/gerar — Gerar relatórios
+
+         * GET /api/triagens/estatisticas/por-risco — Ver estatísticas de triagem por risco
+
+________________
+
+
+????? Rotas para Técnicos
+            * Todas as rotas do gestor
+
+            * GET /api/ambulancias — Listar ambulâncias
+
+            * POST /api/ambulancias — Cadastrar ambulância
+
+            * GET /api/ambulancias/{id} — Ver detalhes da ambulância
+
+            * PUT /api/ambulancias/{id} — Atualizar ambulância
+
+            * DELETE /api/ambulancias/{id} — Remover ambulância
+
+________________
+
+
+??? Rotas para Administradores
+               * Todas as rotas anteriores
+
+               * POST /api/register — Registrar novos usuários
+
+               * GET /api/gabinetes-provinciais — Gerenciar gabinetes provinciais
+
+               * POST /api/gabinetes-provinciais — Criar gabinete provincial
+
+               * PUT /api/gabinetes-provinciais/{id} — Atualizar gabinete provincial
+
+               * DELETE /api/gabinetes-provinciais/{id} — Remover gabinete provincial
+
+               * GET /api/direcoes-municipais — Gerenciar direções municipais
+
+               * POST /api/direcoes-municipais — Criar direção municipal
+
+               * PUT /api/direcoes-municipais/{id} — Atualizar direção municipal
+
+               * DELETE /api/direcoes-municipais/{id} — Remover direção municipal
+
+               * POST /api/hospitais — Cadastrar hospital
+
+               * PUT /api/hospitais/{id} — Atualizar hospital
+
+               * DELETE /api/hospitais/{id} — Remover hospital
+
+               * POST /api/hospitais/{id}/restore — Restaurar hospital excluído
+
+               * POST /api/pacientes/{id}/restore — Restaurar paciente excluído
+
+               * POST /api/triagens/{id}/restore — Restaurar triagem excluída
+
+               * POST /api/encaminhamentos/{id}/restore — Restaurar encaminhamento excluído
+
+________________
+
+
+?? Estatísticas e Relatórios
+                  * Gestores e Administradores: acesso total às estatísticas
+
+                  * Médicos: acesso limitado às estatísticas dos seus pacientes
+
+                  * Técnicos: acesso a estatísticas de ambulâncias e encaminhamentos
+
+________________
+
+
+??? Restauração de Registros
+                     * Apenas Administradores podem restaurar registros excluídos (soft delete)
+
+________________
+
+
+? Resumo de Papéis
+                        * Administradores têm controle total sobre o sistema
+
+                        * Médicos focam no atendimento aos pacientes
+
+                        * Gestores têm acesso a dados e relatórios estratégicos
+
+                        * Técnicos gerenciam a logística (ambulâncias)
+
+                        * Todos os usuários autenticados podem acessar suas próprias informações e fazer logout
+
+
+
+Todas as rotas protegida devem incluir token no cabeçalho
+Headers: {
+    "Authorization": "Bearer {seu_token}",
+    "Content-Type": "application/json"
+}
+________________
+1. ?? Fluxo de Autenticação
+Login Inicial
+                           * Endpoint: POST /api/login
+
+                           * Dados: E-mail e senha
+
+                           * Resultado: Retorna token JWT para autenticação
+
+Registro de Novos Usuários
+                              * Somente administradores podem registrar novos usuários
+
+                              * Endpoint: POST /api/register (requer token de admin)
+
+                              * Campos: name, email, password, tipo (admin, medico, gestor, tecnico), telefone
+
+
+________________
+2. ?? Fluxo de Atendimento ao Paciente
+2.1 Triagem
+Cadastro do Paciente
+                                 * Endpoint: POST /api/pacientes
+{
+  "nome": "Nome do Paciente",
+  "bi_numero": "123456789",
+  "telefone": "123456789",
+  "data_nascimento": "1990-01-01",
+  "endereco": "Endereço do Paciente"
+}
+
+
+Realização da Triagem
+                                 * Endpoint: POST /api/triagens
+
+{
+  "paciente_id": 1,
+  "sintomas": {
+    "diarreia": true,
+    "vomito": true,
+    "desidratacao": true
+  },
+  "observacoes": "Observações do caso"
+}
+Sistema calcula: risco (baixo, médio, alto)
+
+Gera: QR Code de identificação
+
+Sugere: encaminhamento, se necessário
+________________
+
+
+2.2 Encaminhamento
+Busca de Hospital
+                                    * Endpoint: GET /api/hospitais/nearby?lat=X&lng=Y
+
+                                    * Funções:
+
+                                       * Verifica leitos disponíveis
+
+                                       * Calcula distância e tempo
+
+Criação do Encaminhamento
+                                          * Endpoint: POST /api/encaminhamentos
+{
+  "triagem_id": 1,
+  "hospital_id": 1,
+  "observacoes": "Observações do encaminhamento"
+}
+
+
+Gestão de Ambulância
+                                          * Endpoint: GET /api/ambulancias/disponiveis
+
+                                          * Sistema:
+
+                                             * Seleciona ambulância mais próxima
+
+                                             * Atualiza status da ambulância
+________________
+3. ?? Fluxo de Gestão Hospitalar
+3.1 Gestão de Leitos
+Monitoramento de Ocupação
+                                                * Endpoint: GET /api/hospitais/estatisticas
+
+                                                * Mostra ocupação em tempo real
+
+                                                * Alerta sobre capacidade crítica
+
+Atualização de Status
+                                                   * Endpoint: PUT /api/hospitais/{id}
+{
+  "leitos_disponiveis": 10,
+  "status": "ativo"
+}
+3.2 Gestão de Ambulâncias
+Monitoramento
+                                                   * Endpoint: GET /api/ambulancias
+
+                                                   * Mostra localização, status e histórico
+
+Atualização de Status
+                                                      * Endpoint: PUT /api/ambulancias/{id}
+
+json
+CopiarEditar
+{
+  "status": "em_transito",
+  "localizacao_atual": {
+    "latitude": X,
+    "longitude": Y
+  }
+}
+
+
+4. ?? Fluxo de Relatórios e Estatísticas
+4.1 Geração de Relatórios
+                                                         * Endpoint: POST /api/relatorios/gerar
+
+json
+CopiarEditar
+{
+  "tipo": "casos_por_regiao",
+  "periodo_inicio": "2024-01-01",
+  "periodo_fim": "2024-01-31"
+}
+
+
+4.2 Estatísticas em Tempo Real
+                                                            * GET /api/triagens/estatisticas/por-risco
+
+                                                            * GET /api/encaminhamentos/estatisticas
+
+________________
+
+
+5. ??? Fluxo de Gestão Administrativa
+5.1 Gestão de Estruturas
+Gabinetes Provinciais
+                                                               * Endpoint: POST /api/gabinetes-provinciais
+
+json
+CopiarEditar
+{
+  "nome": "Nome do Gabinete",
+  "provincia": "Nome da Província",
+  "endereco": "Endereço",
+  "telefone": "123456789"
+}
+
+
+Direções Municipais
+                                                                  * Endpoint: POST /api/direcoes-municipais
+
+json
+CopiarEditar
+{
+  "nome": "Nome da Direção",
+  "municipio": "Nome do Município",
+  "gabinete_provincial_id": 1
+}
+
+
+________________
+
+
+5.2 Gestão de Usuários
+Registro de Novos Usuários
+                                                                     * Endpoint: POST /api/register
+
+json
+CopiarEditar
+{
+  "name": "Nome do Usuário",
+  "email": "email@exemplo.com",
+  "password": "senha123",
+  "tipo": "medico",
+  "telefone": "123456789"
+}
+
+
+Controle de Acesso
+                                                                        * Cada tipo de usuário tem permissões específicas
+
+                                                                        * Sistema valida permissões a cada requisição
+
+                                                                        * Logs de auditoria são mantidos
+
+________________
+
+
+????? Jornada do Médico
+?? Início do Turno
+                                                                           * Login com credenciais no sistema
+
+                                                                           * Acesso ao dashboard com:
+
+                                                                              * Casos pendentes
+
+                                                                              * Triagens recentes
+
+?? Atendimento ao Paciente
+                                                                                 * Cadastro de novo paciente (dados pessoais)
+
+                                                                                 * Realização da triagem:
+
+                                                                                    * Registro de sintomas: diarreia, vômitos, desidratação
+
+                                                                                    * Avaliação da gravidade
+
+                                                                                    * Inclusão de observações clínicas
+
+                                                                                       * Sistema calcula automaticamente o nível de risco
+
+?? Decisão de Encaminhamento
+                                                                                          * Se o caso for de alto risco:
+
+                                                                                             * Sistema sugere hospitais próximos
+
+                                                                                             * Mostra disponibilidade de leitos
+
+                                                                                             * Calcula tempo estimado de deslocamento
+
+                                                                                             * Médico cria encaminhamento
+
+                                                                                             * Sistema gera QR Code para identificação rápida
+
+?? Acompanhamento
+                                                                                                * Monitoramento do status do encaminhamento
+
+                                                                                                * Verificação se ambulância foi designada
+
+                                                                                                * Acesso ao histórico do paciente
+
+                                                                                                * Atualização do prontuário
+
+________________
+
+
+????? Jornada do Gestor
+?? Monitoramento Diário
+                                                                                                   * Acesso ao dashboard com indicadores:
+
+                                                                                                      * Casos por região
+
+                                                                                                      * Ocupação hospitalar
+
+                                                                                                      * Status das ambulâncias
+
+                                                                                                      * Tempo médio de atendimento
+
+?? Gestão de Recursos
+                                                                                                         * Monitoramento da disponibilidade de leitos
+
+                                                                                                         * Verificação da distribuição dos casos
+
+                                                                                                         * Identificação de sobrecarga
+
+                                                                                                         * Decisões de redistribuição de pacientes
+
+?? Análise de Dados
+                                                                                                            * Geração de relatórios:
+
+                                                                                                               * Evolução dos casos no tempo
+
+                                                                                                               * Faixa etária dos pacientes
+
+                                                                                                               * Efetividade dos encaminhamentos
+
+                                                                                                                  * Exportação de dados
+
+                                                                                                                  * Identificação de tendências
+
+?? Tomada de Decisão
+                                                                                                                     * Baseada em dados reais
+
+                                                                                                                     * Ajuste de estratégias
+
+                                                                                                                     * Coordenação com outras unidades
+
+                                                                                                                     * Planejamento de alocação de recursos
+
+________________
+
+
+????? Jornada do Técnico
+?? Gestão de Ambulâncias
+                                                                                                                        * Monitoramento da frota em tempo real
+
+                                                                                                                        * Verificação de status:
+
+                                                                                                                           * Disponível
+
+                                                                                                                           * Em trânsito
+
+                                                                                                                           * Em atendimento
+
+                                                                                                                           * Em manutenção
+
+?? Coordenação de Transportes
+                                                                                                                              * Recebimento de solicitações
+
+                                                                                                                              * Designação do veículo mais próximo
+
+                                                                                                                              * Monitoramento de trajeto em tempo real
+
+                                                                                                                              * Atualização de status da ambulância
+
+?? Manutenção e Logística
+                                                                                                                                 * Registro de manutenções necessárias
+
+                                                                                                                                 * Controle de abastecimento
+
+                                                                                                                                 * Gestão de equipes de suporte
+
+                                                                                                                                 * Atualização do cadastro de veículos
+
+________________
+
+
+?? Jornada do Administrador
+?? Gestão do Sistema
+                                                                                                                                    * Cadastro de novos usuários
+
+                                                                                                                                    * Definição de permissões e acessos
+
+                                                                                                                                    * Monitoramento do uso do sistema
+
+                                                                                                                                    * Gerenciamento de backups
+
+?? Gestão de Estruturas
+                                                                                                                                       * Cadastro de novos hospitais
+
+                                                                                                                                       * Gerenciamento de gabinetes provinciais
+
+                                                                                                                                       * Controle de direções municipais
+
+                                                                                                                                       * Atualização de dados institucionais
+
+?? Supervisão Geral
+                                                                                                                                          * Acesso total a relatórios
+
+                                                                                                                                          * Monitoramento da performance do sistema
+
+                                                                                                                                          * Verificação de logs de auditoria
+
+                                                                                                                                          * Tomada de decisões estratégicas
+
+?? Manutenção de Dados
+                                                                                                                                             * Restauração de registros excluídos
+
+                                                                                                                                             * Correção de inconsistências
+
+                                                                                                                                             * Atualização cadastral
+
+                                                                                                                                             * Garantia da integridade dos dados

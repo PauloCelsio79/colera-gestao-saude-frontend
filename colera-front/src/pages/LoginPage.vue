@@ -1,39 +1,49 @@
 <template>
-  <div class="flex items-center justify-center min-h-screen bg-gray-100">
-    <div class="card w-full max-w-sm">
-      <h2 class="text-2xl font-bold mb-6 text-center text-gray-900">Login</h2>
-      <form @submit.prevent="handleLogin">
-      <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
-          <input 
-            v-model="email" 
-            type="email" 
-            class="input-field" 
-            required 
+  <div class="flex flex-col min-h-screen bg-gradient-to-br from-blue-100 via-white to-blue-200">
+    <div class="flex flex-1 items-center justify-center">
+      <div class="card w-full max-w-sm relative">
+        <div class="flex flex-col items-center mb-4">
+          <h2 class="text-3xl font-extrabold mb-2 text-center text-primary-700 tracking-tight">Painel Saúde</h2>
+          <span class="text-xs text-gray-400 mb-2">Gestão de Cólera</span>
+        </div>
+        <form @submit.prevent="handleLogin">
+          <div class="mb-4">
+            <label class="block text-sm font-semibold text-gray-700 mb-1">E-mail</label>
+            <input 
+              v-model="email" 
+              type="email" 
+              class="input-field" 
+              required 
+              :disabled="loading"
+              placeholder="Digite seu e-mail"
+            />
+          </div>
+          <div class="mb-6">
+            <label class="block text-sm font-semibold text-gray-700 mb-1">Senha</label>
+            <input 
+              v-model="password" 
+              type="password" 
+              class="input-field" 
+              required 
+              :disabled="loading"
+              placeholder="Digite sua senha"
+            />
+          </div>
+          <button 
+            type="submit" 
+            class="btn-primary w-full transition-all duration-200"
             :disabled="loading"
-          />
+          >
+            <span v-if="loading">Processando...</span>
+            <span v-else>Entrar</span>
+          </button>
+          <p v-if="error" class="text-red-500 mt-4 text-center text-sm animate-pulse">{{ error }}</p>
+        </form>
       </div>
-      <div class="mb-6">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
-          <input 
-            v-model="password" 
-            type="password" 
-            class="input-field" 
-            required 
-            :disabled="loading"
-          />
-      </div>
-        <button 
-          type="submit" 
-          class="btn-primary w-full"
-          :disabled="loading"
-        >
-          <span v-if="loading">Processando...</span>
-          <span v-else>Entrar</span>
-        </button>
-        <p v-if="error" class="text-red-500 mt-4 text-center text-sm">{{ error }}</p>
-    </form>
     </div>
+    <footer class="w-full text-center py-4 text-xs text-gray-400 select-none">
+      &copy; {{ new Date().getFullYear() }} Painel Saúde - Sistema de Gestão de Cólera
+    </footer>
   </div>
 </template>
 
@@ -92,7 +102,7 @@ async function handleLogin() {
     if (e.response) {
       switch (e.response.status) {
         case 401:
-    error.value = 'E-mail ou senha inválidos.'
+          error.value = 'E-mail ou senha inválidos.'
           break
         case 422:
           error.value = 'Por favor, preencha todos os campos corretamente.'
@@ -113,14 +123,14 @@ async function handleLogin() {
 
 <style scoped>
 .card {
-  @apply bg-white p-8 rounded-lg shadow-md;
+  @apply bg-white p-10 rounded-2xl shadow-xl border border-gray-100;
 }
 
 .input-field {
-  @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500;
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition-all duration-150;
 }
 
 .btn-primary {
-  @apply bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply bg-primary-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 disabled:opacity-50 disabled:cursor-not-allowed shadow-md;
 }
 </style>

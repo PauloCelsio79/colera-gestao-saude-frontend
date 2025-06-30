@@ -2,10 +2,10 @@
   <PainelPrevencaoColera />
   <div class="space-y-6">
     <!-- Alerta de hospitais lotados -->
-    <div v-if="hospitaisLotados.length > 0" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+    <div v-if="hospitaisLotados.length > 0" class="bg-red-900/50 border border-red-700 text-red-200 px-4 py-3 rounded relative">
       <strong class="font-bold">Atenção!</strong>
       <span class="block">Os seguintes hospitais estão em capacidade máxima:</span>
-      <ul class="list-disc ml-6">
+      <ul class="list-disc ml-6 mt-2">
         <li v-for="h in hospitaisLotados" :key="h.id">{{ h.nome }}</li>
       </ul>
     </div>
@@ -13,93 +13,85 @@
     <!-- Cards de Métricas -->
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
       <!-- Total de Pacientes -->
-      <div class="bg-white overflow-hidden shadow rounded-lg">
-        <div class="p-5">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <UserGroupIcon class="h-6 w-6 text-gray-400" />
-            </div>
-            <div class="ml-5 w-0 flex-1">
-              <dl>
-                <dt class="text-sm font-medium text-gray-500 truncate">
-                  Total de Pacientes
-                </dt>
-                <dd class="flex items-baseline">
-                  <div class="text-2xl font-semibold text-gray-900">
-                    {{ metricas.totalPacientes }}
-                  </div>
-                </dd>
-              </dl>
-            </div>
+      <div class="card p-5">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <UserGroupIcon class="h-6 w-6 text-secondary-400" />
+          </div>
+          <div class="ml-5 w-0 flex-1">
+            <dl>
+              <dt class="text-sm font-medium text-secondary-400 truncate">
+                Total de Pacientes
+              </dt>
+              <dd class="flex items-baseline">
+                <div class="text-2xl font-semibold text-secondary-100">
+                  {{ metricas.totalPacientes }}
+                </div>
+              </dd>
+            </dl>
           </div>
         </div>
       </div>
 
       <!-- Casos de Alto Risco -->
-      <div class="bg-white overflow-hidden shadow rounded-lg">
-        <div class="p-5">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <ExclamationTriangleIcon class="h-6 w-6 text-red-400" />
-            </div>
-            <div class="ml-5 w-0 flex-1">
-              <dl>
-                <dt class="text-sm font-medium text-gray-500 truncate">
-                  Casos de Alto Risco
-                </dt>
-                <dd class="flex items-baseline">
-                  <div class="text-2xl font-semibold text-gray-900">
-                    {{ metricas.casosAltoRisco }}
-                  </div>
-                </dd>
-              </dl>
-            </div>
+      <div class="card p-5">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <ExclamationTriangleIcon class="h-6 w-6 text-red-400" />
+          </div>
+          <div class="ml-5 w-0 flex-1">
+            <dl>
+              <dt class="text-sm font-medium text-secondary-400 truncate">
+                Casos de Alto Risco
+              </dt>
+              <dd class="flex items-baseline">
+                <div class="text-2xl font-semibold text-secondary-100">
+                  {{ metricas.casosAltoRisco }}
+                </div>
+              </dd>
+            </dl>
           </div>
         </div>
       </div>
 
       <!-- Leitos Disponíveis -->
-      <div class="bg-white overflow-hidden shadow rounded-lg">
-        <div class="p-5">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <HomeIcon class="h-6 w-6 text-green-400" />
-            </div>
-            <div class="ml-5 w-0 flex-1">
-              <dl>
-                <dt class="text-sm font-medium text-gray-500 truncate">
-                  Leitos Disponíveis
-                </dt>
-                <dd class="flex items-baseline">
-                  <div class="text-2xl font-semibold text-gray-900">
-                    {{ metricas.leitosDisponiveis }}
-                  </div>
-                </dd>
-              </dl>
-            </div>
+      <div class="card p-5">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <HomeIcon class="h-6 w-6 text-green-400" />
+          </div>
+          <div class="ml-5 w-0 flex-1">
+            <dl>
+              <dt class="text-sm font-medium text-secondary-400 truncate">
+                Leitos Disponíveis
+              </dt>
+              <dd class="flex items-baseline">
+                <div class="text-2xl font-semibold text-secondary-100">
+                  {{ metricas.leitosDisponiveis }}
+                </div>
+              </dd>
+            </dl>
           </div>
         </div>
       </div>
 
       <!-- Ambulâncias Disponíveis -->
-      <div class="bg-white overflow-hidden shadow rounded-lg">
-        <div class="p-5">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <TruckIcon class="h-6 w-6 text-blue-400" />
-            </div>
-            <div class="ml-5 w-0 flex-1">
-              <dl>
-                <dt class="text-sm font-medium text-gray-500 truncate">
-                  Ambulâncias Disponíveis
-                </dt>
-                <dd class="flex items-baseline">
-                  <div class="text-2xl font-semibold text-gray-900">
-                    {{ metricas.ambulanciasDisponiveis }}
-                  </div>
-                </dd>
-              </dl>
-            </div>
+      <div class="card p-5">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <TruckIcon class="h-6 w-6 text-blue-400" />
+          </div>
+          <div class="ml-5 w-0 flex-1">
+            <dl>
+              <dt class="text-sm font-medium text-secondary-400 truncate">
+                Ambulâncias Disponíveis
+              </dt>
+              <dd class="flex items-baseline">
+                <div class="text-2xl font-semibold text-secondary-100">
+                  {{ metricas.ambulanciasDisponiveis }}
+                </div>
+              </dd>
+            </dl>
           </div>
         </div>
       </div>
@@ -108,8 +100,8 @@
     <!-- Gráficos -->
     <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
       <!-- Casos por Nível de Risco -->
-      <div class="bg-white shadow rounded-lg p-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">
+      <div class="card p-6">
+        <h3 class="text-lg font-medium text-secondary-100 mb-4">
           Casos por Nível de Risco
         </h3>
         <div class="h-64">
@@ -118,8 +110,8 @@
       </div>
 
       <!-- Evolução de Casos -->
-      <div class="bg-white shadow rounded-lg p-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">
+      <div class="card p-6">
+        <h3 class="text-lg font-medium text-secondary-100 mb-4">
           Evolução de Casos
         </h3>
         <div class="h-64">
@@ -129,22 +121,22 @@
     </div>
 
     <!-- Últimos Encaminhamentos -->
-    <div class="bg-white shadow rounded-lg">
+    <div class="card">
       <div class="px-4 py-5 sm:px-6">
-        <h3 class="text-lg font-medium text-gray-900">
+        <h3 class="text-lg font-medium text-secondary-100">
           Últimos Encaminhamentos
         </h3>
       </div>
-      <div class="border-t border-gray-200">
-        <ul role="list" class="divide-y divide-gray-200">
-          <li v-for="encaminhamento in ultimosEncaminhamentos" :key="encaminhamento.id" class="px-4 py-4 sm:px-6">
+      <div class="border-t border-secondary-700">
+        <ul role="list" class="divide-y divide-secondary-700">
+          <li v-for="encaminhamento in ultimosEncaminhamentos" :key="encaminhamento.id" class="px-4 py-4 sm:px-6 hover:bg-secondary-700/50">
             <div class="flex items-center justify-between">
               <div class="flex items-center">
                 <div class="ml-3">
-                  <p class="text-sm font-medium text-gray-900">
+                  <p class="text-sm font-medium text-secondary-100">
                     {{ encaminhamento.paciente?.nome || 'N/A' }}
                   </p>
-                  <p class="text-sm text-gray-500">
+                  <p class="text-sm text-secondary-400">
                     {{ encaminhamento.hospital?.nome || 'N/A' }}
                   </p>
                 </div>
@@ -153,14 +145,14 @@
                 <span
                   :class="{
                     'px-2 inline-flex text-xs leading-5 font-semibold rounded-full': true,
-                    'bg-yellow-100 text-yellow-800': encaminhamento.status === 'pendente',
-                    'bg-blue-100 text-blue-800': encaminhamento.status === 'em_andamento',
-                    'bg-green-100 text-green-800': encaminhamento.status === 'concluido'
+                    'bg-yellow-800 text-yellow-100': encaminhamento.status === 'pendente',
+                    'bg-blue-800 text-blue-100': encaminhamento.status === 'em_andamento',
+                    'bg-green-800 text-green-100': encaminhamento.status === 'concluido'
                   }"
                 >
                   {{ encaminhamento.status }}
                 </span>
-                <span class="ml-4 text-sm text-gray-500">
+                <span class="ml-4 text-sm text-secondary-400">
                   {{ formatDate(encaminhamento.created_at) }}
                 </span>
               </div>
@@ -196,6 +188,10 @@ const riscoChart = ref(null)
 const evolucaoChart = ref(null)
 
 const hospitaisLotados = ref([])
+
+// Configurações padrão para os gráficos no tema escuro
+Chart.defaults.color = '#9ca3af'; // Cor do texto (cinza claro)
+Chart.defaults.borderColor = '#4b5563'; // Cor das linhas de grade (cinza mais escuro)
 
 const fetchMetricas = async () => {
   try {
@@ -271,61 +267,10 @@ const fetchMetricas = async () => {
     console.log('Métricas atualizadas:', metricas.value)
 
     // Atualizar gráfico de risco
-    if (riscoChart.value) {
-      new Chart(riscoChart.value, {
-        type: 'doughnut',
-        data: {
-          labels: ['Alto Risco', 'Médio Risco', 'Baixo Risco'],
-          datasets: [{
-            data: [
-              estatisticasTriagens.alto_risco,
-              estatisticasTriagens.medio_risco,
-              estatisticasTriagens.baixo_risco
-            ],
-            backgroundColor: ['#EF4444', '#F59E0B', '#10B981']
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'bottom'
-            }
-          }
-        }
-      })
-    }
+    createRiscoChart(estatisticasTriagens)
 
     // Atualizar gráfico de evolução
-    if (evolucaoChart.value) {
-      new Chart(evolucaoChart.value, {
-        type: 'line',
-        data: {
-          labels: estatisticasTriagens.evolucao.dates,
-          datasets: [{
-            label: 'Casos',
-            data: estatisticasTriagens.evolucao.casos,
-            borderColor: '#3B82F6',
-            tension: 0.1
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true
-            }
-          },
-          plugins: {
-            legend: {
-              position: 'bottom'
-            }
-          }
-        }
-      })
-    }
+    createEvolucaoChart(estatisticasTriagens.evolucao)
 
   } catch (error) {
     console.error('Erro ao buscar métricas:', error)
@@ -343,6 +288,82 @@ const fetchMetricas = async () => {
     } else {
       alert('Erro de conexão. Verifique se o servidor está rodando.')
     }
+  }
+}
+
+const createRiscoChart = (data) => {
+  if (riscoChart.value) {
+    new Chart(riscoChart.value, {
+      type: 'doughnut',
+      data: {
+        labels: ['Alto Risco', 'Médio Risco', 'Baixo Risco'],
+        datasets: [{
+          data: [data.alto_risco, data.medio_risco, data.baixo_risco],
+          backgroundColor: ['#ef4444', '#f97316', '#22c55e'],
+          borderColor: '#374151',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#d1d5db' // Cor do texto da legenda
+            }
+          }
+        }
+      }
+    })
+  }
+}
+
+const createEvolucaoChart = (data) => {
+  if (evolucaoChart.value) {
+    new Chart(evolucaoChart.value, {
+      type: 'line',
+      data: {
+        labels: Object.keys(data),
+        datasets: [{
+          label: 'Novos Casos',
+          data: Object.values(data),
+          fill: true,
+          borderColor: '#22c55e', // Cor da linha (verde primário)
+          backgroundColor: 'rgba(34, 197, 94, 0.2)', // Área sob a linha
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: '#4b5563' // Cor da grade do eixo Y
+            },
+            ticks: {
+              color: '#d1d5db' // Cor dos rótulos do eixo Y
+            }
+          },
+          x: {
+            grid: {
+              color: '#4b5563' // Cor da grade do eixo X
+            },
+            ticks: {
+              color: '#d1d5db' // Cor dos rótulos do eixo X
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      }
+    })
   }
 }
 

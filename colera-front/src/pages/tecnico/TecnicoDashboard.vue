@@ -1,8 +1,10 @@
 <template>
   <PainelPrevencaoColera />
-  <div class="bg-white shadow rounded-lg p-8">
-    <h1 class="text-2xl font-bold mb-4">Painel do Técnico</h1>
-    <p>Bem-vindo ao painel do técnico! Utilize o menu ao lado para acessar as funcionalidades.</p>
+  <div class="card mt-6">
+    <div class="p-6">
+      <h1 class="text-xl font-bold text-secondary-100 mb-2">Painel do Técnico</h1>
+      <p class="text-secondary-300">Bem-vindo ao painel do técnico! Utilize o menu ao lado para acessar as funcionalidades.</p>
+    </div>
   </div>
 </template>
 

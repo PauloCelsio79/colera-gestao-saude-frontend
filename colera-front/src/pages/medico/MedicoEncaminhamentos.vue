@@ -1,19 +1,19 @@
 <template>
   <PainelPrevencaoColera />
-  <div class="bg-white shadow rounded-lg">
+  <div class="card">
     <!-- Header -->
-    <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
+    <div class="px-4 py-5 border-b border-secondary-700 sm:px-6">
       <div class="flex justify-between items-center">
-        <h3 class="text-lg leading-6 font-medium text-gray-900">
+        <h3 class="text-lg leading-6 font-medium text-secondary-100">
           Gerenciamento de Encaminhamentos
         </h3>
       </div>
     </div>
 
     <!-- Filtros -->
-    <div class="px-4 py-3 bg-gray-50 flex flex-col sm:flex-row sm:items-end sm:space-x-4 space-y-2 sm:space-y-0">
+    <div class="px-4 py-4 bg-secondary-700/50 border-b border-secondary-700 flex flex-col sm:flex-row sm:items-end sm:space-x-4 space-y-2 sm:space-y-0">
       <div>
-        <label class="block text-xs font-medium text-gray-700 mb-1">Status</label>
+        <label class="block text-xs font-medium text-secondary-300 mb-1">Status</label>
         <select v-model="filtros.status" class="input-field">
           <option value="">Todos</option>
           <option value="pendente">Pendente</option>
@@ -23,53 +23,53 @@
         </select>
       </div>
       <div>
-        <label class="block text-xs font-medium text-gray-700 mb-1">Paciente</label>
+        <label class="block text-xs font-medium text-secondary-300 mb-1">Paciente</label>
         <input v-model="filtros.paciente" type="text" class="input-field" placeholder="Nome ou BI do paciente">
       </div>
       <div>
-        <label class="block text-xs font-medium text-gray-700 mb-1">Hospital</label>
+        <label class="block text-xs font-medium text-secondary-300 mb-1">Hospital</label>
         <input v-model="filtros.hospital" type="text" class="input-field" placeholder="Nome do hospital">
       </div>
     </div>
 
     <!-- Table -->
     <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+      <table class="min-w-full divide-y divide-secondary-700">
+        <thead class="bg-secondary-700">
           <tr>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider w-1/4">
               Paciente
             </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider w-1/4">
               Hospital
             </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider w-1/6">
               Data
             </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider w-1/6">
               Status
             </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider w-1/6">
               Ações
             </th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="encaminhamento in encaminhamentosPaginados" :key="encaminhamento.id" class="hover:bg-gray-50">
+        <tbody class="bg-secondary-800 divide-y divide-secondary-700">
+          <tr v-for="encaminhamento in encaminhamentosPaginados" :key="encaminhamento.id" class="hover:bg-secondary-700">
             <td class="px-6 py-4">
               <div class="flex items-center">
                 <div class="flex-shrink-0 h-10 w-10">
-                  <div class="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
-                    <span class="text-primary-600 font-medium text-sm">
+                  <div class="h-10 w-10 rounded-full bg-primary-800 flex items-center justify-center">
+                    <span class="text-primary-300 font-medium text-sm">
                       {{ encaminhamento.triagem?.paciente?.nome?.charAt(0) || '?' }}
                     </span>
                   </div>
                 </div>
                 <div class="ml-4 min-w-0">
-                  <div class="text-sm font-medium text-gray-900 truncate">
+                  <div class="text-sm font-medium text-secondary-100 truncate">
                     {{ encaminhamento.triagem?.paciente?.nome || 'Paciente não encontrado' }}
                   </div>
-                  <div class="text-sm text-gray-500 truncate">
+                  <div class="text-sm text-secondary-400 truncate">
                     BI: {{ encaminhamento.triagem?.paciente?.bi_numero || 'N/A' }}
                   </div>
                 </div>
@@ -77,20 +77,20 @@
             </td>
             <td class="px-6 py-4">
               <div class="min-w-0">
-                <div class="text-sm text-gray-900 truncate">
+                <div class="text-sm text-secondary-200 truncate">
                   {{ encaminhamento.hospital?.nome || 'Hospital não encontrado' }}
                 </div>
-                <div class="text-sm text-gray-500 truncate">
+                <div class="text-sm text-secondary-500 truncate">
                   {{ encaminhamento.hospital?.endereco || 'N/A' }}
                 </div>
               </div>
             </td>
             <td class="px-6 py-4">
               <div class="min-w-0">
-                <div class="text-sm text-gray-900 truncate">
+                <div class="text-sm text-secondary-200 truncate">
                   {{ formatDate(encaminhamento.created_at) }}
                 </div>
-                <div class="text-sm text-gray-500 truncate">
+                <div class="text-sm text-secondary-500 truncate">
                   {{ formatTime(encaminhamento.created_at) }}
                 </div>
               </div>
@@ -99,10 +99,10 @@
               <span
                 :class="{
                   'px-2 inline-flex text-xs leading-5 font-semibold rounded-full': true,
-                  'bg-yellow-100 text-yellow-800': encaminhamento.status === 'pendente',
-                  'bg-blue-100 text-blue-800': encaminhamento.status === 'em_transito',
-                  'bg-green-100 text-green-800': encaminhamento.status === 'concluido',
-                  'bg-red-100 text-red-800': encaminhamento.status === 'cancelado'
+                  'bg-yellow-800 text-yellow-100': encaminhamento.status === 'pendente',
+                  'bg-blue-800 text-blue-100': encaminhamento.status === 'em_transito',
+                  'bg-green-800 text-green-100': encaminhamento.status === 'concluido',
+                  'bg-red-800 text-red-100': encaminhamento.status === 'cancelado'
                 }"
               >
                 {{ encaminhamento.status === 'pendente' ? 'Pendente' :
@@ -113,25 +113,16 @@
             </td>
             <td class="px-6 py-4">
               <div class="flex items-center space-x-3">
-                <button
-                  @click="viewEncaminhamento(encaminhamento)"
-                  class="text-primary-600 hover:text-primary-900 flex items-center"
-                >
-                  <svg class="h-5 w-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                <button @click="viewEncaminhamento(encaminhamento)" class="btn-icon-link" title="Detalhes">
+                  <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                  <span class="hidden sm:inline">Detalhes</span>
                 </button>
-                <button
-                  v-if="encaminhamento.status === 'em_transito'"
-                  @click="updateStatus(encaminhamento, 'concluido')"
-                  class="text-green-600 hover:text-green-900 flex items-center"
-                >
-                  <svg class="h-5 w-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                <button v-if="encaminhamento.status === 'em_transito'" @click="updateStatus(encaminhamento, 'concluido')" class="btn-icon-link text-green-500 hover:text-green-400" title="Concluir">
+                  <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span class="hidden sm:inline">Concluir</span>
                 </button>
               </div>
             </td>
@@ -141,191 +132,115 @@
     </div>
 
     <!-- Paginação -->
-    <div v-if="totalPaginas > 1" class="flex justify-center items-center space-x-2 py-4">
-      <button @click="irParaPagina(1)" :disabled="paginaAtual === 1" class="btn-secondary px-2">«</button>
-      <button @click="paginaAnterior" :disabled="paginaAtual === 1" class="btn-secondary px-2">Anterior</button>
-      <span class="mx-2 text-sm">Página {{ paginaAtual }} de {{ totalPaginas }}</span>
-      <button @click="proximaPagina" :disabled="paginaAtual === totalPaginas" class="btn-secondary px-2">Próxima</button>
-      <button @click="irParaPagina(totalPaginas)" :disabled="paginaAtual === totalPaginas" class="btn-secondary px-2">»</button>
+    <div v-if="totalPaginas > 1" class="flex justify-center items-center space-x-2 py-4 border-t border-secondary-700">
+      <button @click="irParaPagina(1)" :disabled="paginaAtual === 1" class="btn-secondary px-3 py-1 text-xs">«</button>
+      <button @click="paginaAnterior" :disabled="paginaAtual === 1" class="btn-secondary px-3 py-1 text-xs">Anterior</button>
+      <span class="mx-2 text-sm text-secondary-400">Página {{ paginaAtual }} de {{ totalPaginas }}</span>
+      <button @click="proximaPagina" :disabled="paginaAtual === totalPaginas" class="btn-secondary px-3 py-1 text-xs">Próxima</button>
+      <button @click="irParaPagina(totalPaginas)" :disabled="paginaAtual === totalPaginas" class="btn-secondary px-3 py-1 text-xs">»</button>
     </div>
 
     <!-- Modal -->
-    <div v-if="showModal" class="fixed inset-0 z-50 overflow-y-auto">
-      <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 transition-opacity" aria-hidden="true">
-          <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+    <div v-if="showModal" class="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-75 flex items-center justify-center">
+      <div class="card p-0 transform transition-all sm:my-8 sm:max-w-2xl sm:w-full max-h-[90vh] flex flex-col">
+        
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between p-4 border-b border-secondary-700 flex-shrink-0">
+          <h3 class="text-lg font-medium text-secondary-100">
+            {{ isCreatingEncaminhamento ? 'Novo Encaminhamento' : 'Detalhes do Encaminhamento' }}
+          </h3>
+          <button @click="closeModal" class="btn-icon-secondary">
+            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
-        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-          <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">
-              {{ isCreatingEncaminhamento ? 'Novo Encaminhamento' : 'Detalhes do Encaminhamento' }}
-            </h3>
+        <!-- Modal Body -->
+        <div class="p-6 overflow-y-auto">
+          <!-- Form State -->
+          <form v-if="isCreatingEncaminhamento" @submit.prevent="handleSubmit" class="space-y-4">
+            <div>
+              <label class="label">Triagem (Apenas Alto Risco)</label>
+              <select v-model="form.triagem_id" @change="buscarHospitaisProximosParaTriagem" class="input-field" required>
+                <option disabled value="">Selecione uma triagem de alto risco</option>
+                <option v-for="triagem in triagensAltoRisco" :key="triagem.id" :value="triagem.id">
+                  {{ triagem.paciente?.nome }} - {{ formatDate(triagem.created_at) }}
+                </option>
+              </select>
+            </div>
             
-            <!-- Formulário de Novo Encaminhamento -->
-            <form v-if="isCreatingEncaminhamento" @submit.prevent="handleSubmit" class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Triagem (Apenas Alto Risco)</label>
-                <select v-model="form.triagem_id" @change="buscarHospitaisProximosParaTriagem" class="input-field" required>
-                  <option value="">Selecione uma triagem de alto risco</option>
-                  <option v-for="triagem in triagensAltoRisco" :key="triagem.id" :value="triagem.id">
-                    {{ triagem.paciente?.nome }} - {{ formatDate(triagem.created_at) }} - Nível de Risco: Alto
-                  </option>
-                </select>
-              </div>
-
-              <!-- Lista de Hospitais Próximos -->
-              <div v-if="hospitaisProximos.length > 0" class="mt-4">
-                <h4 class="text-sm font-medium text-gray-700 mb-2">Hospitais Próximos</h4>
-                <div class="space-y-3">
-                  <div v-for="(hospital, index) in hospitaisProximos" :key="hospital.id" 
-                       class="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer"
-                       :class="{
-                         'border-primary-500 bg-primary-50': form.hospital_id === hospital.id,
-                         'border-green-500 bg-green-50': index === 0 && !form.hospital_id
-                       }"
-                       @click="selecionarHospital(hospital)">
-                    <div class="flex justify-between items-start">
-                      <div>
-                        <h5 class="font-medium text-gray-900">
-                          {{ hospital.nome }}
-                          <span v-if="index === 0 && !form.hospital_id" class="ml-2 text-xs text-green-600">
-                            (Sugestão do sistema)
-                          </span>
-                        </h5>
-                        <p class="text-sm text-gray-600">{{ hospital.endereco }}</p>
-                      </div>
-                      <div class="text-right">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                              :class="{
-                                'bg-green-100 text-green-800': hospital.leitos_disponiveis > 5,
-                                'bg-yellow-100 text-yellow-800': hospital.leitos_disponiveis > 0 && hospital.leitos_disponiveis <= 5,
-                                'bg-red-100 text-red-800': hospital.leitos_disponiveis === 0
-                              }">
-                          {{ hospital.leitos_disponiveis }} leitos disponíveis
-                        </span>
-                      </div>
+            <div v-if="form.triagem_id">
+              <label class="label mb-2">Hospital de Destino</label>
+              <div v-if="carregandoHospitais" class="text-center py-4 text-secondary-400">Carregando hospitais...</div>
+              <div v-else-if="hospitaisProximos.length > 0" class="space-y-3">
+                <div v-for="(hospital, index) in hospitaisProximos" :key="hospital.id" 
+                     class="border-2 rounded-lg p-3 cursor-pointer transition-all"
+                     :class="{
+                       'border-primary-600 bg-primary-900/30': form.hospital_id === hospital.id,
+                       'border-secondary-700 hover:border-secondary-600': form.hospital_id !== hospital.id,
+                       'border-green-600 bg-green-900/30': index === 0 && !form.hospital_id
+                     }"
+                     @click="selecionarHospital(hospital)">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <h5 class="font-semibold text-secondary-100">
+                        {{ hospital.nome }}
+                        <span v-if="index === 0 && !form.hospital_id" class="ml-2 text-xs text-green-300 font-normal">(Sugestão)</span>
+                      </h5>
+                      <p class="text-sm text-secondary-400">{{ hospital.endereco }}</p>
                     </div>
-                    <div class="mt-2 grid grid-cols-2 gap-2 text-sm">
-                      <div>
-                        <span class="text-gray-500">Distância:</span>
-                        <span class="ml-1 font-medium">{{ hospital.distancia.toFixed(1) }} km</span>
-                      </div>
-                      <div>
-                        <span class="text-gray-500">Tempo estimado:</span>
-                        <span class="ml-1 font-medium">{{ formatarTempoEstimado(hospital.tempoEstimado) }}</span>
-                      </div>
+                    <div class="text-right flex-shrink-0 ml-4">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                            :class="{
+                              'bg-green-800 text-green-100': hospital.leitos_disponiveis > 5,
+                              'bg-yellow-800 text-yellow-100': hospital.leitos_disponiveis > 0 && hospital.leitos_disponiveis <= 5,
+                              'bg-red-800 text-red-100': hospital.leitos_disponiveis === 0
+                            }">
+                        {{ hospital.leitos_disponiveis }} Leitos
+                      </span>
                     </div>
+                  </div>
+                  <div class="mt-2 grid grid-cols-2 gap-2 text-sm border-t border-secondary-700 pt-2">
+                    <div><span class="text-secondary-500">Distância:</span><span class="ml-1 font-medium text-secondary-300">{{ hospital.distancia.toFixed(1) }} km</span></div>
+                    <div><span class="text-secondary-500">Tempo:</span><span class="ml-1 font-medium text-secondary-300">{{ formatarTempoEstimado(hospital.tempoEstimado) }}</span></div>
                   </div>
                 </div>
               </div>
+              <div v-else class="text-center py-4 text-secondary-500">Nenhum hospital encontrado.</div>
+            </div>
 
-              <div v-else-if="form.triagem_id" class="text-center py-4 text-gray-500">
-                <span v-if="carregandoHospitais">Carregando hospitais próximos...</span>
-                <span v-else>Nenhum hospital próximo encontrado ou dados incompletos.<br>Verifique se há hospitais cadastrados com latitude/longitude e leitos disponíveis.</span>
-              </div>
+            <div>
+              <label class="label">Observações</label>
+              <textarea v-model="form.observacoes" rows="3" class="input-field" placeholder="Observações sobre o encaminhamento..."></textarea>
+            </div>
+          </form>
 
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Observações</label>
-                <textarea
-                  v-model="form.observacoes"
-                  rows="3"
-                  class="input-field"
-                  placeholder="Adicione observações adicionais sobre o encaminhamento..."
-                ></textarea>
-              </div>
-
-              <div class="mt-6 flex justify-end space-x-3">
-                <button
-                  type="button"
-                  @click="closeModal"
-                  class="btn-secondary"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  class="btn-primary"
-                  :disabled="!form.hospital_id"
-                >
-                  Criar Encaminhamento
-                </button>
-              </div>
-            </form>
-
-            <!-- Detalhes do Encaminhamento -->
-            <div v-else class="space-y-4">
-              <!-- Informações do Paciente -->
-              <div class="border-b pb-4">
-                <h4 class="text-sm font-medium text-gray-500">Paciente</h4>
-                <div class="mt-1">
-                  <p class="text-sm text-gray-900">{{ selectedEncaminhamento?.triagem?.paciente?.nome || 'Paciente não encontrado' }}</p>
-                  <p class="text-sm text-gray-500">BI: {{ selectedEncaminhamento?.triagem?.paciente?.bi_numero || 'N/A' }}</p>
+          <!-- Details State -->
+          <div v-else-if="encaminhamentoAtual" class="space-y-4 text-sm">
+             <div class="grid grid-cols-2 gap-4">
+                <div><p class="label">Paciente:</p><p class="text-secondary-200">{{ encaminhamentoAtual.triagem?.paciente?.nome }}</p></div>
+                <div><p class="label">BI:</p><p class="text-secondary-200">{{ encaminhamentoAtual.triagem?.paciente?.bi_numero }}</p></div>
+                <div><p class="label">Data Encaminhamento:</p><p class="text-secondary-200">{{ formatDate(encaminhamentoAtual.created_at) }}</p></div>
+                <div><p class="label">Status:</p>
+                    <span class="px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full" :class="{'bg-yellow-800 text-yellow-100': encaminhamentoAtual.status === 'pendente', 'bg-blue-800 text-blue-100': encaminhamentoAtual.status === 'em_transito', 'bg-green-800 text-green-100': encaminhamentoAtual.status === 'concluido', 'bg-red-800 text-red-100': encaminhamentoAtual.status === 'cancelado'}">
+                        {{ encaminhamentoAtual.status }}
+                    </span>
                 </div>
-              </div>
-
-              <!-- Informações do Hospital -->
-              <div class="border-b pb-4">
-                <h4 class="text-sm font-medium text-gray-500">Hospital</h4>
-                <div class="mt-1">
-                  <p class="text-sm text-gray-900">{{ selectedEncaminhamento?.hospital?.nome || 'Hospital não encontrado' }}</p>
-                  <p class="text-sm text-gray-500">{{ selectedEncaminhamento?.hospital?.endereco || 'N/A' }}</p>
-                </div>
-              </div>
-
-              <!-- Data e Hora -->
-              <div class="border-b pb-4">
-                <h4 class="text-sm font-medium text-gray-500">Data e Hora</h4>
-                <div class="mt-1">
-                  <p class="text-sm text-gray-900">
-                    {{ formatDate(selectedEncaminhamento?.created_at) }}
-                    às
-                    {{ formatTime(selectedEncaminhamento?.created_at) }}
-                  </p>
-                </div>
-              </div>
-
-              <!-- Status -->
-              <div class="border-b pb-4">
-                <h4 class="text-sm font-medium text-gray-500">Status</h4>
-                <div class="mt-1">
-                  <span
-                    :class="{
-                      'px-2 inline-flex text-xs leading-5 font-semibold rounded-full': true,
-                      'bg-yellow-100 text-yellow-800': selectedEncaminhamento?.status === 'pendente',
-                      'bg-blue-100 text-blue-800': selectedEncaminhamento?.status === 'em_transito',
-                      'bg-green-100 text-green-800': selectedEncaminhamento?.status === 'concluido',
-                      'bg-red-100 text-red-800': selectedEncaminhamento?.status === 'cancelado'
-                    }"
-                  >
-                    {{ selectedEncaminhamento?.status === 'pendente' ? 'Pendente' :
-                       selectedEncaminhamento?.status === 'em_transito' ? 'Em Trânsito' :
-                       selectedEncaminhamento?.status === 'concluido' ? 'Concluído' :
-                       selectedEncaminhamento?.status === 'cancelado' ? 'Cancelado' : 'Status Desconhecido' }}
-                  </span>
-                </div>
-              </div>
-
-              <!-- Observações -->
-              <div>
-                <h4 class="text-sm font-medium text-gray-500">Observações</h4>
-                <p class="mt-1 text-sm text-gray-900 whitespace-pre-wrap">
-                  {{ selectedEncaminhamento?.observacoes || 'Sem observações' }}
-                </p>
-              </div>
+                <div class="col-span-2"><p class="label">Hospital de Destino:</p><p class="text-secondary-200">{{ encaminhamentoAtual.hospital?.nome }}</p></div>
+                <div class="col-span-2"><p class="label">Observações:</p><p class="text-secondary-200">{{ encaminhamentoAtual.observacoes || 'Nenhuma.' }}</p></div>
             </div>
           </div>
-          <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-            <button
-              type="button"
-              @click="closeModal"
-              class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm"
-            >
-              Fechar
-            </button>
-          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="bg-secondary-700/50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse flex-shrink-0">
+          <button v-if="isCreatingEncaminhamento" type="button" @click="handleSubmit" class="btn-primary" :disabled="!form.hospital_id">
+            Criar Encaminhamento
+          </button>
+          <button type="button" @click="closeModal" class="btn-secondary mr-3">
+            Fechar
+          </button>
         </div>
       </div>
     </div>

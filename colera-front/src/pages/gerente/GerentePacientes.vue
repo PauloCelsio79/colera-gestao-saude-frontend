@@ -1,16 +1,16 @@
 <template>
-  <div class="bg-white shadow rounded-lg">
+  <div class="card">
     <!-- Header -->
-    <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
+    <div class="px-4 py-5 border-b border-secondary-700 sm:px-6">
       <div class="flex justify-between items-center">
-        <h3 class="text-lg leading-6 font-medium text-gray-900">
+        <h3 class="text-lg leading-6 font-medium text-secondary-100">
           Gerenciamento de Pacientes
         </h3>
       </div>
     </div>
 
     <!-- Filtros -->
-    <div class="px-4 py-2 grid grid-cols-1 sm:grid-cols-4 gap-2">
+    <div class="px-4 py-4 grid grid-cols-1 sm:grid-cols-4 gap-4 bg-secondary-700/50 border-b border-secondary-700">
       <input v-model="filtros.nome" type="text" placeholder="Filtrar por nome" class="input-field" />
       <input v-model="filtros.bi" type="text" placeholder="Filtrar por BI" class="input-field" />
       <input v-model="filtros.telefone" type="text" placeholder="Filtrar por telefone" class="input-field" />
@@ -18,48 +18,48 @@
     </div>
 
     <!-- Total de pacientes -->
-    <div class="px-4 py-2 text-sm text-gray-700 font-semibold">
+    <div class="px-4 py-2 text-sm text-secondary-400 font-semibold">
       Total: {{ pacientesFiltrados.length }} pacientes (de {{ pacientes.length }})
     </div>
 
     <!-- Table -->
     <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+      <table class="min-w-full divide-y divide-secondary-700">
+        <thead class="bg-secondary-700">
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Risco</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hospital de Destino</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">Nome</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">Risco</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">Hospital de Destino</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">Status</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">Ações</th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="enc in encaminhamentos" :key="enc.id">
+        <tbody class="bg-secondary-800 divide-y divide-secondary-700">
+          <tr v-for="enc in encaminhamentos" :key="enc.id" class="hover:bg-secondary-700">
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm font-medium text-gray-900">{{ enc.triagem?.paciente?.nome || '-' }}</div>
+              <div class="text-sm font-medium text-secondary-100">{{ enc.triagem?.paciente?.nome || '-' }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <span class="text-xs font-semibold" :class="{
-                'text-red-700': (enc.triagem?.nivel_risco || enc.triagem?.paciente?.risco) === 'alto',
-                'text-yellow-700': (enc.triagem?.nivel_risco || enc.triagem?.paciente?.risco) === 'medio',
-                'text-green-700': (enc.triagem?.nivel_risco || enc.triagem?.paciente?.risco) === 'baixo'
+              <span class="text-xs font-semibold px-2 py-1 rounded-full" :class="{
+                'bg-red-800 text-red-100': (enc.triagem?.nivel_risco || enc.triagem?.paciente?.risco) === 'alto',
+                'bg-yellow-800 text-yellow-100': (enc.triagem?.nivel_risco || enc.triagem?.paciente?.risco) === 'medio',
+                'bg-green-800 text-green-100': (enc.triagem?.nivel_risco || enc.triagem?.paciente?.risco) === 'baixo'
               }">
                 {{ enc.triagem?.nivel_risco || enc.triagem?.paciente?.risco || '-' }}
               </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900">{{ enc.hospital?.nome || '-' }}</div>
+              <div class="text-sm text-secondary-300">{{ enc.hospital?.nome || '-' }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <select v-model="enc.status" @change="alterarStatusEncaminhamento(enc, enc.status)" class="border rounded px-2 py-1 text-xs">
+              <select v-model="enc.status" @change="alterarStatusEncaminhamento(enc, enc.status)" class="input-field text-xs py-1">
                 <option value="pendente">Pendente</option>
                 <option value="em_andamento">Em Andamento</option>
                 <option value="concluido">Concluído</option>
               </select>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex gap-2 justify-end">
-              <button @click="abrirModalTriagens(enc.triagem?.paciente)" class="text-primary-600 hover:text-primary-900">Ver Triagens</button>
+              <button @click="abrirModalTriagens(enc.triagem?.paciente)" class="text-primary-500 hover:text-primary-400">Ver Triagens</button>
             </td>
           </tr>
         </tbody>
@@ -67,31 +67,33 @@
     </div>
 
     <!-- Modal de Triagens do Paciente -->
-    <div v-if="showModalTriagens" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 max-w-lg w-full">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-medium text-gray-900">Triagens de {{ pacienteAtual?.nome }}</h3>
-          <button @click="closeModalTriagens" class="text-gray-400 hover:text-gray-500">
+    <div v-if="showModalTriagens" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+      <div class="card p-0 max-w-lg w-full">
+        <div class="flex justify-between items-center mb-4 p-6 border-b border-secondary-700">
+          <h3 class="text-lg font-medium text-secondary-100">Triagens de {{ pacienteAtual?.nome }}</h3>
+          <button @click="closeModalTriagens" class="text-secondary-400 hover:text-white">
             <span class="sr-only">Fechar</span>
             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
-        <div v-if="triagensPaciente.length > 0">
-          <ul>
-            <li v-for="triagem in triagensPaciente" :key="triagem.id" class="mb-2 flex justify-between items-center">
-              <span>ID: {{ triagem.id }} | Data: {{ formatDate(triagem.created_at) }} | Nível de risco: {{ triagem.nivel_risco }}</span>
-              <button @click="verDetalhesTriagem(triagem.id)" class="ml-2 text-primary-600 hover:text-primary-900 text-xs">Ver Detalhes</button>
-            </li>
-          </ul>
+        <div class="p-6">
+          <div v-if="triagensPaciente.length > 0">
+            <ul class="space-y-3">
+              <li v-for="triagem in triagensPaciente" :key="triagem.id" class="flex justify-between items-center text-secondary-300">
+                <span>ID: {{ triagem.id }} | Data: {{ formatDate(triagem.created_at) }} | Nível de risco: {{ triagem.nivel_risco }}</span>
+                <button @click="verDetalhesTriagem(triagem.id)" class="ml-2 text-primary-500 hover:text-primary-400 text-xs">Ver Detalhes</button>
+              </li>
+            </ul>
+          </div>
+          <div v-else class="text-secondary-500">Nenhuma triagem encontrada para este paciente.</div>
+          <div v-if="detalhesTriagem">
+            <h4 class="font-semibold mt-4 mb-2 text-secondary-200">Detalhes da Triagem</h4>
+            <pre class="bg-secondary-900 p-3 rounded text-xs text-secondary-300 whitespace-pre-wrap">{{ detalhesTriagem }}</pre>
+          </div>
+          <div v-if="erroTriagem" class="text-red-400 mt-2">{{ erroTriagem }}</div>
         </div>
-        <div v-else class="text-gray-500">Nenhuma triagem encontrada para este paciente.</div>
-        <div v-if="detalhesTriagem">
-          <h4 class="font-semibold mt-4 mb-2">Detalhes da Triagem</h4>
-          <pre class="bg-gray-100 p-2 rounded text-xs">{{ detalhesTriagem }}</pre>
-        </div>
-        <div v-if="erroTriagem" class="text-red-600 mt-2">{{ erroTriagem }}</div>
       </div>
     </div>
   </div>

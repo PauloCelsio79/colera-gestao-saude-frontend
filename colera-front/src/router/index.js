@@ -138,7 +138,7 @@ const router = createRouter({
 
 // Middleware de autenticação
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('token')
+  const token = localStorage.getItem('authToken')
   const user = JSON.parse(localStorage.getItem('user') || '{}')
   
   // Se não estiver autenticado e tentar acessar uma rota protegida
@@ -158,7 +158,7 @@ router.beforeEach((to, from, next) => {
     } else if (user.tipo === 'tecnico') {
       return next('/dashboard/tecnico')
     } else {
-      localStorage.removeItem('token')
+      localStorage.removeItem('authToken')
       localStorage.removeItem('user')
       return next('/login')
     }

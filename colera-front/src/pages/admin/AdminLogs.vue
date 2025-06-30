@@ -1,6 +1,6 @@
 <template>
-  <div class="bg-white shadow rounded-lg p-6">
-    <h2 class="text-2xl font-bold mb-4">Logs do Sistema</h2>
+  <div class="card p-6">
+    <h2 class="text-2xl font-bold mb-4 text-secondary-100">Logs do Sistema</h2>
     <div class="mb-4 flex flex-wrap gap-4">
       <select v-model="filtros.tipo" class="input-field">
         <option value="">Todos os Tipos</option>
@@ -35,33 +35,33 @@
       </select>
       <button @click="buscarLogs" class="btn-primary">Filtrar</button>
     </div>
-    <div v-if="erro" class="mb-4 p-4 bg-red-100 text-red-700 rounded">
+    <div v-if="erro" class="mb-4 p-4 bg-red-900/50 text-red-300 rounded">
       {{ erro }}
     </div>
     <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+      <table class="min-w-full divide-y divide-secondary-700">
+        <thead class="bg-secondary-700">
           <tr>
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Usuário</th>
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ação</th>
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Detalhes</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-secondary-300 uppercase">Data</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-secondary-300 uppercase">Usuário</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-secondary-300 uppercase">Tipo</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-secondary-300 uppercase">Ação</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-secondary-300 uppercase">Detalhes</th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="log in logs" :key="log.id">
-            <td class="px-4 py-2">{{ formatarData(log.created_at) }}</td>
-            <td class="px-4 py-2">{{ log.usuario?.name || 'N/A' }}</td>
-            <td class="px-4 py-2">{{ log.usuario?.tipo || 'N/A' }}</td>
-            <td class="px-4 py-2">{{ log.mensagem }}</td>
-            <td class="px-4 py-2">
+        <tbody class="bg-secondary-800 divide-y divide-secondary-700">
+          <tr v-for="log in logs" :key="log.id" class="hover:bg-secondary-700">
+            <td class="px-4 py-2 text-secondary-300">{{ formatarData(log.created_at) }}</td>
+            <td class="px-4 py-2 text-secondary-300">{{ log.usuario?.name || 'N/A' }}</td>
+            <td class="px-4 py-2 text-secondary-300">{{ log.usuario?.tipo || 'N/A' }}</td>
+            <td class="px-4 py-2 text-secondary-300">{{ log.mensagem }}</td>
+            <td class="px-4 py-2 text-secondary-300">
               <span v-if="typeof log.detalhes === 'object' && log.detalhes !== null">
-                <span v-if="log.detalhes.metodo">Método: {{ log.detalhes.metodo }}<br></span>
-                <span v-if="log.detalhes.status">Status: {{ log.detalhes.status }}<br></span>
+                <span v-if="log.detalhes.metodo" class="block">Método: {{ log.detalhes.metodo }}</span>
+                <span v-if="log.detalhes.status" class="block">Status: {{ log.detalhes.status }}</span>
                 <span v-if="log.detalhes.parametros">
-                  <span v-for="(valor, chave) in log.detalhes.parametros" :key="chave">
-                    {{ chave }}: {{ valor }}<br>
+                  <span v-for="(valor, chave) in log.detalhes.parametros" :key="chave" class="block">
+                    {{ chave }}: {{ valor }}
                   </span>
                 </span>
               </span>
@@ -69,26 +69,26 @@
             </td>
           </tr>
           <tr v-if="logs.length === 0">
-            <td colspan="5" class="text-center text-gray-500 py-4">Nenhum log encontrado.</td>
+            <td colspan="5" class="text-center text-secondary-500 py-4">Nenhum log encontrado.</td>
           </tr>
         </tbody>
       </table>
     </div>
     <!-- Paginação -->
-    <div v-if="lastPage > 1" class="flex justify-center items-center space-x-2 py-4">
-      <button @click="irParaPagina(1)" :disabled="currentPage === 1" class="btn-primary px-2">«</button>
-      <button @click="paginaAnterior" :disabled="currentPage === 1" class="btn-primary px-2">Anterior</button>
+    <div v-if="lastPage > 1" class="flex justify-center items-center space-x-2 py-4 text-secondary-300">
+      <button @click="irParaPagina(1)" :disabled="currentPage === 1" class="btn-primary px-2 disabled:opacity-50">&laquo;</button>
+      <button @click="paginaAnterior" :disabled="currentPage === 1" class="btn-primary px-2 disabled:opacity-50">Anterior</button>
       <span class="mx-2 text-sm">Página {{ currentPage }} de {{ lastPage }}</span>
-      <button @click="proximaPagina" :disabled="currentPage === lastPage" class="btn-primary px-2">Próxima</button>
-      <button @click="irParaPagina(lastPage)" :disabled="currentPage === lastPage" class="btn-primary px-2">»</button>
-      <span class="ml-4 text-xs text-gray-500">Total: {{ total }}</span>
+      <button @click="proximaPagina" :disabled="currentPage === lastPage" class="btn-primary px-2 disabled:opacity-50">Próxima</button>
+      <button @click="irParaPagina(lastPage)" :disabled="currentPage === lastPage" class="btn-primary px-2 disabled:opacity-50">&raquo;</button>
+      <span class="ml-4 text-xs text-secondary-500">Total: {{ total }}</span>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import api from '@/api'
 
 const logs = ref([])
 const erro = ref('')
@@ -122,45 +122,29 @@ const orderByOptions = [
 const buscarLogs = async (pagina = 1) => {
   try {
     erro.value = ''
-    const token = localStorage.getItem('token')
-    if (!token) {
-      erro.value = 'Token não encontrado. Por favor, faça login novamente.'
-      return
-    }
-    const params = {}
-    if (filtros.value.tipo) params.tipo = filtros.value.tipo
-    if (filtros.value.nivel) params.nivel = filtros.value.nivel
-    if (filtros.value.busca) params.busca = filtros.value.busca
-    if (filtros.value.data_inicio) params.data_inicio = filtros.value.data_inicio
-    if (filtros.value.data_fim) params.data_fim = filtros.value.data_fim
-    if (filtros.value.per_page) params.per_page = filtros.value.per_page
-    if (filtros.value.order_by) params.order_by = filtros.value.order_by
-    if (filtros.value.order) params.order = filtros.value.order
-    params.page = pagina
+    
+    const params = {
+        page: pagina,
+        ...filtros.value
+    };
 
-    const response = await axios.get('http://127.0.0.1:8000/api/logs', {
-      params,
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    })
+    const response = await api.get('/logs', { params });
+    
     logs.value = response.data.data.map(log => ({
       ...log,
       detalhes: typeof log.detalhes === 'string' ? JSON.parse(log.detalhes) : log.detalhes
-    }))
-    currentPage.value = response.data.current_page || 1
-    lastPage.value = response.data.last_page || 1
-    total.value = response.data.total || 0
+    }));
+    currentPage.value = response.data.current_page || 1;
+    lastPage.value = response.data.last_page || 1;
+    total.value = response.data.total || 0;
   } catch (error) {
-    erro.value = error.response?.data?.message || 'Erro ao buscar logs'
-    logs.value = []
-    currentPage.value = 1
-    lastPage.value = 1
-    total.value = 0
+    erro.value = error.response?.data?.message || 'Erro ao buscar logs';
+    logs.value = [];
+    currentPage.value = 1;
+    lastPage.value = 1;
+    total.value = 0;
   }
-}
+};
 
 const irParaPagina = (pagina) => {
   if (pagina < 1 || pagina > lastPage.value) return

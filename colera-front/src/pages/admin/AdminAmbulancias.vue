@@ -1,674 +1,407 @@
 <template>
-  <div class="bg-white shadow rounded-lg">
-    <!-- Header -->
-    <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
-      <div class="flex justify-between items-center">
-        <h3 class="text-lg leading-6 font-medium text-gray-900">
-          Gerenciamento de Ambulâncias
-        </h3>
-        <button
-          @click="openNewAmbulanciaModal"
-          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-        >
-          Nova Ambulância
+  <div class="p-6 bg-gray-900 min-h-screen text-gray-100">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-3xl font-bold text-white">Gestão de Ambulâncias</h1>
+      <button @click="openAddModal" class="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
+        <i class="fas fa-plus mr-2"></i> Adicionar Ambulância
+      </button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="mb-6 bg-gray-800 p-4 rounded-lg shadow-lg">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <input type="text" v-model="filters.placa" placeholder="Filtrar por Placa" class="input-field bg-gray-700 border-gray-600 text-white rounded-lg focus:ring-primary-500 focus:border-primary-500">
+        <select v-model="filters.status" class="input-field bg-gray-700 border-gray-600 text-white rounded-lg focus:ring-primary-500 focus:border-primary-500">
+          <option value="">Todos os Status</option>
+          <option value="disponivel">Disponível</option>
+          <option value="em_servico">Em Serviço</option>
+          <option value="em_manutencao">Em Manutenção</option>
+        </select>
+        <button @click="applyFilters" class="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2 px-4 rounded-lg shadow-md w-full md:w-auto">
+          <i class="fas fa-filter mr-2"></i> Aplicar Filtros
         </button>
       </div>
     </div>
 
-    <!-- Table -->
-    <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Placa
-            </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Modelo
-            </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Hospital
-            </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Status
-            </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Localização
-            </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Ações
-            </th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="ambulancia in ambulancias" :key="ambulancia.id">
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm font-medium text-gray-900">{{ ambulancia.placa }}</div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900">{{ ambulancia.modelo }}</div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900">{{ getHospitalName(ambulancia.hospital_id) }}</div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" :class="{
-                'bg-green-100 text-green-800': ambulancia.status === 'disponivel',
-                'bg-yellow-100 text-yellow-800': ambulancia.status === 'em_deslocamento',
-                'bg-blue-100 text-blue-800': ambulancia.status === 'ocupada',
-                'bg-red-100 text-red-800': ambulancia.status === 'manutencao',
-                'bg-gray-200 text-gray-700': ambulancia.status === 'inativa'
-              }">
-                {{ getStatusLabel(ambulancia.status) }}
-              </span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {{ ambulancia.latitude }}, {{ ambulancia.longitude }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-              <button
-                @click="editAmbulancia(ambulancia)"
-                class="text-primary-600 hover:text-primary-900 mr-4"
-              >
-                Editar
-              </button>
-              <button
-                @click="deleteAmbulancia(ambulancia.id)"
-                class="text-red-600 hover:text-red-900"
-              >
-                Excluir
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <!-- Gráfico de Barras -->
-    <div class="p-6 flex justify-center">
-      <canvas id="ambulanciasBarChart" width="400" height="220" style="max-width: 100%;"></canvas>
+    <!-- Tabela de Ambulâncias -->
+    <div class="bg-secondary-800 rounded-lg shadow-lg overflow-hidden border border-secondary-700">
+      <div class="overflow-x-auto">
+        <table class="min-w-full">
+          <thead class="bg-secondary-700/50">
+            <tr>
+              <th class="py-3 px-6 text-left text-sm font-semibold text-gray-300 uppercase tracking-wider">Placa</th>
+              <th class="py-3 px-6 text-left text-sm font-semibold text-gray-300 uppercase tracking-wider">Modelo</th>
+              <th class="py-3 px-6 text-left text-sm font-semibold text-gray-300 uppercase tracking-wider">Ano</th>
+              <th class="py-3 px-6 text-left text-sm font-semibold text-gray-300 uppercase tracking-wider">Status</th>
+              <th class="py-3 px-6 text-center text-sm font-semibold text-gray-300 uppercase tracking-wider">Ações</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-secondary-700">
+            <tr v-if="loading">
+              <td colspan="5" class="text-center py-4 text-gray-400">
+                <i class="fas fa-spinner fa-spin mr-2"></i> Carregando ambulâncias...
+              </td>
+            </tr>
+            <tr v-else-if="filteredAmbulancias.length === 0">
+              <td colspan="5" class="text-center py-4 text-gray-400">Nenhuma ambulância encontrada.</td>
+            </tr>
+            <tr v-for="ambulancia in filteredAmbulancias" :key="ambulancia.id" class="hover:bg-secondary-700/50 transition-colors duration-200">
+              <td class="py-4 px-6 text-sm text-gray-100">{{ ambulancia.placa }}</td>
+              <td class="py-4 px-6 text-sm text-gray-100">{{ ambulancia.modelo }}</td>
+              <td class="py-4 px-6 text-sm text-gray-100">{{ ambulancia.ano }}</td>
+              <td class="py-4 px-6 text-sm">
+                <span :class="getStatusClass(ambulancia.status)" class="px-3 py-1 rounded-full text-xs font-semibold inline-block">
+                  {{ formatStatus(ambulancia.status) }}
+                </span>
+              </td>
+              <td class="py-4 px-6 text-center">
+                <button @click="openEditModal(ambulancia)" class="text-blue-400 hover:text-blue-300 mr-3 transition-colors duration-200" title="Editar">
+                  <i class="fas fa-pencil-alt"></i>
+                </button>
+                <button @click="openDeleteModal(ambulancia)" class="text-red-500 hover:text-red-400 transition-colors duration-200" title="Excluir">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
-    <!-- Modal -->
-    <div v-if="showModal" class="fixed z-10 inset-0 overflow-y-auto">
-      <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 transition-opacity" aria-hidden="true">
-          <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
-        </div>
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-          <form @submit.prevent="handleSubmit" class="p-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">
-              {{ editingAmbulancia ? 'Editar Ambulância' : 'Nova Ambulância' }}
-            </h3>
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Placa</label>
-                <input
-                  v-model="form.placa"
-                  type="text"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                  required
-                />
+    <!-- Modal Adicionar/Editar Ambulância -->
+    <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+      <div class="bg-gray-800 rounded-lg shadow-2xl p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <h2 class="text-2xl font-bold mb-6 text-white">{{ isEditMode ? 'Editar Ambulância' : 'Adicionar Nova Ambulância' }}</h2>
+        <form @submit.prevent="saveAmbulancia">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <input v-model="currentAmbulancia.placa" type="text" placeholder="Placa" required class="input-field bg-gray-700 border-gray-600 text-white rounded-lg focus:ring-primary-500 focus:border-primary-500">
+            <input v-model="currentAmbulancia.modelo" type="text" placeholder="Modelo" required class="input-field bg-gray-700 border-gray-600 text-white rounded-lg focus:ring-primary-500 focus:border-primary-500">
+            <input v-model="currentAmbulancia.ano" type="number" placeholder="Ano" required class="input-field bg-gray-700 border-gray-600 text-white rounded-lg focus:ring-primary-500 focus:border-primary-500">
+            <select v-model="currentAmbulancia.status" required class="input-field bg-gray-700 border-gray-600 text-white rounded-lg focus:ring-primary-500 focus:border-primary-500">
+              <option disabled value="">Selecione o Status</option>
+              <option value="disponivel">Disponível</option>
+              <option value="em_servico">Em Serviço</option>
+              <option value="em_manutencao">Em Manutenção</option>
+            </select>
+          </div>
+          <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-300 mb-2">Localização da Base (Clique no mapa para definir)</label>
+              <div class="w-full h-64 rounded-lg shadow-inner bg-gray-700" id="map-container">
+                  <l-map
+                    ref="map"
+                    v-model:zoom="zoom"
+                    :center="mapCenter"
+                    @click="handleMapClick"
+                    style="height: 100%; width: 100%; z-index: 0;"
+                  >
+                    <l-tile-layer
+                      :url="tileLayerUrl"
+                      :attribution="attribution"
+                    ></l-tile-layer>
+                    <l-marker v-if="currentAmbulancia.latitude && currentAmbulancia.longitude" :lat-lng="[currentAmbulancia.latitude, currentAmbulancia.longitude]">
+                        <l-popup> Localização da Base da Ambulância </l-popup>
+                    </l-marker>
+                  </l-map>
               </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Modelo</label>
-                <input
-                  v-model="form.modelo"
-                  type="text"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                  required
-                />
+              <div class="mt-2 text-sm text-gray-400">
+                Lat: {{ currentAmbulancia.latitude || 'N/A' }}, Long: {{ currentAmbulancia.longitude || 'N/A' }}
               </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Hospital</label>
-                <div class="relative">
-                  <input
-                    v-model="hospitalSearch"
-                    type="text"
-                    placeholder="Buscar hospital..."
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                    @input="filterHospitais"
-                  />
-                  <div v-if="showHospitalList" class="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg">
-                    <ul class="max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
-                      <li
-                        v-for="hospital in filteredHospitais"
-                        :key="hospital.id"
-                        class="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-primary-50"
-                        @click="selectHospital(hospital)"
-                      >
-                        <div class="flex items-center">
-                          <span class="ml-3 block truncate">{{ hospital.nome }}</span>
-                        </div>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Status</label>
-                <select
-                  v-model="form.status"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                  required
-                >
-                  <option value="disponivel">Disponível</option>
-                  <option value="em_deslocamento">Em Deslocamento</option>
-                  <option value="ocupada">Ocupada</option>
-                  <option value="manutencao">Em Manutenção</option>
-                  <option value="inativa">Inativa</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Localização</label>
-                <div 
-                  ref="mapContainer" 
-                  class="mt-1 h-48 w-full rounded-lg border border-gray-300"
-                ></div>
-                <p class="mt-1 text-sm text-gray-500">
-                  Clique no mapa para selecionar a localização da ambulância
-                </p>
-              </div>
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">Latitude</label>
-                  <input
-                    v-model="form.latitude"
-                    type="number"
-                    step="any"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                    required
-                    readonly
-                  />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">Longitude</label>
-                  <input
-                    v-model="form.longitude"
-                    type="number"
-                    step="any"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                    required
-                    readonly
-                  />
-                </div>
-              </div>
-            </div>
-            <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-              <button
-                type="submit"
-                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:col-start-2 sm:text-sm"
-              >
-                {{ editingAmbulancia ? 'Salvar' : 'Criar' }}
-              </button>
-              <button
-                type="button"
-                @click="closeModal"
-                class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:col-start-1 sm:text-sm"
-              >
-                Cancelar
-              </button>
-            </div>
-          </form>
-        </div>
+          </div>
+          <div class="flex justify-end gap-4 mt-8">
+            <button type="button" @click="closeModal" class="btn-secondary bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-lg">Cancelar</button>
+            <button type="submit" class="btn-primary bg-primary-600 hover:bg-primary-700 text-white font-bold py-2 px-6 rounded-lg">
+                <i v-if="saving" class="fas fa-spinner fa-spin mr-2"></i>
+                {{ isEditMode ? 'Salvar Alterações' : 'Adicionar' }}
+            </button>
+          </div>
+        </form>
       </div>
+    </div>
+
+    <!-- Modal de Confirmação de Exclusão -->
+    <div v-if="showDeleteConfirmation" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+        <div class="bg-gray-800 rounded-lg shadow-2xl p-8 w-full max-w-md">
+            <h2 class="text-2xl font-bold mb-4 text-white">Confirmar Exclusão</h2>
+            <p class="text-gray-300 mb-6">Tem certeza de que deseja excluir a ambulância com placa <span class="font-bold text-accent-400">{{ ambulanciaToDelete.placa }}</span>? Esta ação não pode ser desfeita.</p>
+            <div class="flex justify-end gap-4">
+                <button @click="closeDeleteModal" class="btn-secondary bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-lg">Cancelar</button>
+                <button @click="confirmDelete" class="btn-danger bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">
+                    <i v-if="deleting" class="fas fa-spinner fa-spin mr-2"></i>
+                    Excluir
+                </button>
+            </div>
+        </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch, onUnmounted } from 'vue'
-import axios from 'axios'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
-import Chart from 'chart.js/auto'
+import { ref, onMounted, computed, nextTick } from 'vue';
+import api from '@/api';
+import "leaflet/dist/leaflet.css";
+import { LMap, LTileLayer, LMarker, LPopup } from "@vue-leaflet/vue-leaflet";
+import L from 'leaflet';
+import iconUrl from 'leaflet/dist/images/marker-icon.png';
+import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
 
-const ambulancias = ref([])
-const hospitais = ref([])
-const showModal = ref(false)
-const editingAmbulancia = ref(null)
-const form = ref({
+// Corrige o caminho do ícone padrão do Leaflet no Vite
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: iconUrl,
+  iconUrl: iconUrl,
+  shadowUrl: shadowUrl,
+});
+
+// Estado reativo
+const ambulancias = ref([]);
+const loading = ref(true);
+const saving = ref(false);
+const deleting = ref(false);
+
+const filters = ref({
+  placa: '',
+  status: '',
+});
+
+const showModal = ref(false);
+const showDeleteConfirmation = ref(false);
+const isEditMode = ref(false);
+
+const defaultAmbulancia = {
+  id: null,
   placa: '',
   modelo: '',
-  hospital_id: '',
+  ano: new Date().getFullYear(),
   status: 'disponivel',
-  latitude: '',
-  longitude: ''
-})
+  latitude: null,
+  longitude: null,
+};
+const currentAmbulancia = ref({ ...defaultAmbulancia });
+const ambulanciaToDelete = ref(null);
 
-const hospitalSearch = ref('')
-const showHospitalList = ref(false)
-const filteredHospitais = ref([])
-const map = ref(null)
-const marker = ref(null)
-const mapContainer = ref(null)
-let barChart = null
+// Configuração do mapa
+const map = ref(null);
+const zoom = ref(8);
+const defaultCenter = [-14.25, 14.83]; // Centro da Província da Huíla
+const mapCenter = ref(defaultCenter);
+const tileLayerUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+const attribution = '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>';
 
+
+// Funções
 const fetchAmbulancias = async () => {
+  loading.value = true;
   try {
-    console.log('Buscando ambulâncias...')
-    const response = await axios.get('http://127.0.0.1:8000/api/ambulancias', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    })
-    
-    console.log('Resposta da API:', response.data)
-    
-    // Garante que os dados estejam no formato correto
-    let ambulanciasData = []
-    if (Array.isArray(response.data)) {
-      ambulanciasData = response.data
-    } else if (response.data?.data && Array.isArray(response.data.data)) {
-      ambulanciasData = response.data.data
-    } else if (typeof response.data === 'object') {
-      // Se for um objeto único, converte para array
-      ambulanciasData = [response.data]
-    }
-
-    // Processa e valida cada ambulância
-    ambulancias.value = ambulanciasData
-      .filter(ambulancia => ambulancia && typeof ambulancia === 'object')
-      .map(ambulancia => ({
-        id: ambulancia.id || null,
-        placa: ambulancia.placa || 'Placa não informada',
-        modelo: ambulancia.modelo || 'Modelo não informado',
-        hospital_id: ambulancia.hospital_id || null,
-        status: ambulancia.status || 'disponivel',
-        latitude: parseFloat(ambulancia.latitude) || 0,
-        longitude: parseFloat(ambulancia.longitude) || 0
-      }))
-
-    console.log('Total de ambulâncias carregadas:', ambulancias.value.length)
-    console.log('Ambulâncias processadas:', ambulancias.value)
-
-    // Atualizar a lista de hospitais se necessário
-    if (hospitais.value.length === 0) {
-      await fetchHospitais()
+    const response = await api.get('/ambulancias');
+    // A API pode retornar um objeto com a propriedade 'data' contendo o array
+    if (response.data && Array.isArray(response.data.data)) {
+      ambulancias.value = response.data.data;
+    } else if (Array.isArray(response.data)) {
+      // Ou pode retornar o array diretamente
+      ambulancias.value = response.data;
+    } else {
+      console.warn("A resposta da API de ambulâncias não é um array:", response.data);
+      ambulancias.value = [];
     }
   } catch (error) {
-    console.error('Erro ao buscar ambulâncias:', error)
-    if (error.response) {
-      console.error('Status do erro:', error.response.status)
-      console.error('Dados do erro:', error.response.data)
-      alert(error.response.data.message || 'Erro ao carregar ambulâncias')
-    } else if (error.request) {
-      console.error('Erro na requisição:', error.request)
-      alert('Erro de conexão com o servidor')
-    } else {
-      console.error('Mensagem de erro:', error.message)
-      alert(error.message)
-    }
-    ambulancias.value = []
+    console.error('Erro ao buscar ambulâncias:', error);
+    ambulancias.value = []; // Garante que seja um array em caso de erro
+  } finally {
+    loading.value = false;
   }
-}
+};
 
-const fetchHospitais = async () => {
-  try {
-    console.log('Buscando hospitais...')
-    const response = await axios.get('http://127.0.0.1:8000/api/hospitais', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    })
-    
-    console.log('Resposta da API de hospitais:', response.data)
-    
-    // Garante que os dados estejam no formato correto
-    let hospitaisData = []
-    if (Array.isArray(response.data)) {
-      hospitaisData = response.data
-    } else if (response.data?.data && Array.isArray(response.data.data)) {
-      hospitaisData = response.data.data
-    }
+onMounted(fetchAmbulancias);
 
-    // Processa e valida cada hospital
-    hospitais.value = hospitaisData
-      .filter(hospital => hospital && typeof hospital === 'object')
-      .map(hospital => ({
-        id: hospital.id,
-        nome: hospital.nome || 'Nome não informado',
-        tipo: hospital.tipo || 'outro',
-        endereco: hospital.endereco || 'Endereço não informado'
-      }))
+const filteredAmbulancias = computed(() => {
+    return ambulancias.value.filter(amb => {
+        const placaMatch = amb.placa.toLowerCase().includes(filters.value.placa.toLowerCase());
+        const statusMatch = filters.value.status ? amb.status === filters.value.status : true;
+        return placaMatch && statusMatch;
+    });
+});
 
-    console.log('Total de hospitais carregados:', hospitais.value.length)
-  } catch (error) {
-    console.error('Erro ao buscar hospitais:', error)
-    if (error.response) {
-      console.error('Status do erro:', error.response.status)
-      console.error('Dados do erro:', error.response.data)
-      alert(error.response.data.message || 'Erro ao carregar hospitais')
-    } else if (error.request) {
-      console.error('Erro na requisição:', error.request)
-      alert('Erro de conexão com o servidor')
-    } else {
-      console.error('Mensagem de erro:', error.message)
-      alert(error.message)
-    }
-    hospitais.value = []
+const applyFilters = () => {
+  // A filtragem já é reativa com o computed property,
+  // mas um botão pode ser útil para UX em cenários mais complexos.
+  // Neste caso, não faz nada extra, mas mantemos para consistência.
+  console.log('Filtros aplicados:', filters.value);
+};
+
+const getStatusClass = (status) => {
+  switch (status) {
+    case 'disponivel':
+      return 'bg-green-500 bg-opacity-20 text-green-300';
+    case 'em_deslocamento':
+    case 'em_servico':
+      return 'bg-yellow-500 bg-opacity-20 text-yellow-300';
+    case 'manutencao':
+    case 'em_manutencao':
+      return 'bg-red-500 bg-opacity-20 text-red-300';
+    default:
+      return 'bg-gray-500 bg-opacity-20 text-gray-300';
   }
-}
+};
 
-const getHospitalName = (hospitalId) => {
-  if (!hospitalId || !Array.isArray(hospitais.value)) return 'N/A'
-  const hospital = hospitais.value.find(h => h && h.id === hospitalId)
-  return hospital ? hospital.nome : 'N/A'
-}
-
-const getStatusLabel = (status) => {
-  const labels = {
+const formatStatus = (status) => {
+  const statusMap = {
     disponivel: 'Disponível',
     em_deslocamento: 'Em Deslocamento',
-    ocupada: 'Ocupada',
-    manutencao: 'Em Manutenção',
-    inativa: 'Inativa'
-  }
-  return labels[status] || status
-}
+    em_servico: 'Em Serviço',
+    manutencao: 'Manutenção',
+    em_manutencao: 'Em Manutenção',
+  };
+  return statusMap[status] || status.replace('_', ' ');
+};
 
-const filterHospitais = () => {
-  if (!hospitalSearch.value) {
-    filteredHospitais.value = hospitais.value
-  } else {
-    const search = hospitalSearch.value.toLowerCase()
-    filteredHospitais.value = hospitais.value.filter(hospital => 
-      hospital.nome.toLowerCase().includes(search)
-    )
-  }
-  showHospitalList.value = true
-}
+const resetCurrentAmbulancia = () => {
+    currentAmbulancia.value = { ...defaultAmbulancia };
+    mapCenter.value = defaultCenter;
+    zoom.value = 8;
+};
 
-const selectHospital = (hospital) => {
-  form.value.hospital_id = hospital.id
-  hospitalSearch.value = hospital.nome
-  showHospitalList.value = false
-}
+const openAddModal = () => {
+  resetCurrentAmbulancia();
+  isEditMode.value = false;
+  showModal.value = true;
+  nextTick(() => {
+    if (map.value) {
+        map.value.leafletObject.invalidateSize();
+        map.value.leafletObject.setView(mapCenter.value, zoom.value);
+    }
+  });
+};
 
-const initMap = () => {
-  if (!mapContainer.value) return
+const openEditModal = (ambulancia) => {
+  isEditMode.value = true;
+  currentAmbulancia.value = { ...ambulancia };
+  showModal.value = true;
 
-  map.value = L.map(mapContainer.value).setView([-8.838333, 13.234444], 13)
-  
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-  }).addTo(map.value)
-
-  marker.value = L.marker([-8.838333, 13.234444], {
-    draggable: true
-  }).addTo(map.value)
-
-  marker.value.on('dragend', (event) => {
-    const position = event.target.getLatLng()
-    form.value.latitude = position.lat
-    form.value.longitude = position.lng
-  })
-
-  map.value.on('click', (event) => {
-    const { lat, lng } = event.latlng
-    marker.value.setLatLng([lat, lng])
-    form.value.latitude = lat
-    form.value.longitude = lng
-  })
-}
-
-watch([() => form.value.latitude, () => form.value.longitude], ([lat, lng]) => {
-  if (lat && lng && marker.value) {
-    marker.value.setLatLng([lat, lng])
-    map.value.setView([lat, lng])
-  }
-})
-
-watch(showModal, (newValue) => {
-  if (newValue) {
-    setTimeout(() => {
+  nextTick(() => {
       if (map.value) {
-        map.value.invalidateSize()
-      } else {
-        initMap()
+          const lat = parseFloat(ambulancia.latitude);
+          const lng = parseFloat(ambulancia.longitude);
+          const newCenter = [lat || defaultCenter[0], lng || defaultCenter[1]];
+          const newZoom = (lat && lng) ? 15 : 8;
+          
+          map.value.leafletObject.invalidateSize();
+          map.value.leafletObject.setView(newCenter, newZoom);
       }
-    }, 100)
-  }
-})
+  });
+};
 
-const openNewAmbulanciaModal = () => {
-  editingAmbulancia.value = null
-  form.value = {
-    placa: '',
-    modelo: '',
-    hospital_id: '',
-    status: 'disponivel',
-    latitude: -8.838333,
-    longitude: 13.234444
-  }
-  hospitalSearch.value = ''
-  showModal.value = true
-}
-
-const editAmbulancia = (ambulancia) => {
-  editingAmbulancia.value = ambulancia
-  form.value = { ...ambulancia }
-  const hospital = hospitais.value.find(h => h.id === ambulancia.hospital_id)
-  hospitalSearch.value = hospital ? hospital.nome : ''
-  showModal.value = true
-}
+const openDeleteModal = (ambulancia) => {
+    ambulanciaToDelete.value = ambulancia;
+    showDeleteConfirmation.value = true;
+};
 
 const closeModal = () => {
-  showModal.value = false
-  editingAmbulancia.value = null
-  form.value = {
-    placa: '',
-    modelo: '',
-    hospital_id: '',
-    status: 'disponivel',
-    latitude: -8.838333,
-    longitude: 13.234444
-  }
-  hospitalSearch.value = ''
-}
+  showModal.value = false;
+  resetCurrentAmbulancia();
+};
 
-const handleSubmit = async () => {
+const closeDeleteModal = () => {
+    showDeleteConfirmation.value = false;
+    ambulanciaToDelete.value = null;
+};
+
+const saveAmbulancia = async () => {
+  if (saving.value) return;
+  saving.value = true;
+
   try {
-    console.log('Iniciando salvamento da ambulância...')
-    console.log('Dados do formulário:', form.value)
-
-    // Validação dos campos obrigatórios
-    const camposObrigatorios = {
-      placa: 'Placa',
-      modelo: 'Modelo',
-      hospital_id: 'Hospital',
-      status: 'Status',
-      latitude: 'Latitude',
-      longitude: 'Longitude'
+    // Adiciona o ID do gabinete provincial a partir do usuário logado.
+    // Este campo é obrigatório pela API.
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user || !user.gabinete_provincial_id) {
+        throw new Error('O seu perfil de administrador não tem um gabinete provincial associado. Contacte o suporte.');
     }
 
-    const camposFaltantes = []
-    for (const [campo, label] of Object.entries(camposObrigatorios)) {
-      if (!form.value[campo]) {
-        camposFaltantes.push(label)
-      }
-    }
+    const dataToSend = {
+      ...currentAmbulancia.value,
+      gabinete_provincial_id: user.gabinete_provincial_id,
+    };
 
-    if (camposFaltantes.length > 0) {
-      alert(`Por favor, preencha os seguintes campos: ${camposFaltantes.join(', ')}`)
-      return
-    }
-
-    // Preparação dos dados
-    const data = {
-      placa: form.value.placa.toUpperCase(),
-      modelo: form.value.modelo,
-      hospital_id: parseInt(form.value.hospital_id),
-      status: form.value.status,
-      latitude: parseFloat(form.value.latitude),
-      longitude: parseFloat(form.value.longitude)
-    }
-
-    console.log('Dados preparados para envio:', data)
-
-    if (editingAmbulancia.value) {
-      // Atualizar ambulância existente
-      console.log('Atualizando ambulância:', editingAmbulancia.value.id)
-      const response = await axios.put(
-        `http://127.0.0.1:8000/api/ambulancias/${editingAmbulancia.value.id}`,
-        data,
-        {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
-        }
-      )
-      console.log('Resposta da atualização:', response.data)
+    if (isEditMode.value) {
+      await api.put(`/ambulancias/${currentAmbulancia.value.id}`, dataToSend);
     } else {
-      // Criar nova ambulância
-      console.log('Criando nova ambulância')
-      const response = await axios.post(
-        'http://127.0.0.1:8000/api/ambulancias',
-        data,
-        {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
-        }
-      )
-      console.log('Resposta da criação:', response.data)
+      await api.post('/ambulancias', dataToSend);
     }
-
-    // Atualizar a lista de ambulâncias
-    await fetchAmbulancias()
-    
-    // Fechar o modal
-    closeModal()
-    
-    // Mostrar mensagem de sucesso
-    alert(editingAmbulancia.value ? 'Ambulância atualizada com sucesso!' : 'Ambulância criada com sucesso!')
+    await fetchAmbulancias();
+    closeModal();
   } catch (error) {
-    console.error('Erro ao salvar ambulância:', error)
-    if (error.response) {
-      console.error('Status do erro:', error.response.status)
-      console.error('Dados do erro:', error.response.data)
-      const mensagensErro = error.response.data.errors || {}
-      const mensagem = Object.entries(mensagensErro)
-        .map(([campo, erros]) => `${campo}: ${erros.join(', ')}`)
-        .join('\n')
-      alert(`Erro ao salvar ambulância:\n${mensagem}`)
-    } else if (error.request) {
-      console.error('Erro na requisição:', error.request)
-      alert('Erro de conexão com o servidor')
+    console.error('Erro ao salvar ambulância:', error);
+    if (error.response && error.response.data) {
+        // Log detalhado do erro de validação da API
+        console.error('Detalhes do erro da API (422):', error.response.data);
+        // Aqui você pode adicionar uma notificação para o usuário com o erro específico
+        alert('Erro de validação: ' + (error.response.data.message || 'Verifique os dados e tente novamente.'));
     } else {
-      console.error('Mensagem de erro:', error.message)
-      alert(error.message)
+      // Usa a mensagem de erro personalizada se o gabinete não for encontrado
+      alert(error.message);
     }
+    // Adicionar notificação de erro para o usuário
+  } finally {
+    saving.value = false;
   }
-}
+};
 
-const deleteAmbulancia = async (ambulanciaId) => {
-  if (!ambulanciaId) return
-  if (!confirm('Tem certeza que deseja excluir esta ambulância?')) return
-  
-  try {
-    await axios.delete(`http://127.0.0.1:8000/api/ambulancias/${ambulanciaId}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      }
-    })
-    await fetchAmbulancias()
-  } catch (error) {
-    console.error('Erro ao excluir ambulância:', error)
-    if (error.response) {
-      console.error('Detalhes do erro:', error.response.data)
-      alert(error.response.data.message || 'Erro ao excluir ambulância')
-    } else {
-      alert('Erro ao excluir ambulância. Verifique a conexão com o servidor.')
+const confirmDelete = async () => {
+    if (deleting.value) return;
+    deleting.value = true;
+
+    try {
+        await api.delete(`/ambulancias/${ambulanciaToDelete.value.id}`);
+        await fetchAmbulancias();
+        closeDeleteModal();
+    } catch (error) {
+        console.error('Erro ao excluir ambulância:', error);
+    } finally {
+        deleting.value = false;
     }
-  }
-}
+};
 
-// Adicionar função para recarregar os dados
-const reloadAmbulancias = () => {
-  fetchAmbulancias()
-}
-
-// Atualizar o onMounted para incluir um intervalo de atualização
-onMounted(() => {
-  fetchAmbulancias()
-  fetchHospitais()
-  
-  // Recarregar os dados a cada 30 segundos
-  const interval = setInterval(() => {
-    fetchAmbulancias()
-  }, 30000)
-
-  // Limpar o intervalo quando o componente for desmontado
-  onUnmounted(() => {
-    clearInterval(interval)
-  })
-
-  watch(ambulancias, () => {
-    setTimeout(renderBarChart, 100)
-  }, { deep: true, immediate: true })
-})
-
-function renderBarChart() {
-  const statusLabels = [
-    'Disponível',
-    'Em Deslocamento',
-    'Ocupada',
-    'Em Manutenção',
-    'Inativa'
-  ]
-  const statusKeys = [
-    'disponivel',
-    'em_deslocamento',
-    'ocupada',
-    'manutencao',
-    'inativa'
-  ]
-  const statusColors = [
-    '#34d399', // verde
-    '#fbbf24', // amarelo
-    '#60a5fa', // azul
-    '#f87171', // vermelho
-    '#d1d5db'  // cinza
-  ]
-  const counts = statusKeys.map(key => ambulancias.value.filter(a => a.status === key).length)
-  const ctx = document.getElementById('ambulanciasBarChart').getContext('2d')
-  if (barChart) barChart.destroy()
-  barChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: statusLabels,
-      datasets: [{
-        label: 'Quantidade de Ambulâncias',
-        data: counts,
-        backgroundColor: statusColors
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        title: { display: true, text: 'Resumo das Ambulâncias por Status' }
-      },
-      scales: {
-        y: { beginAtZero: true, precision: 0 }
-      }
+const handleMapClick = (event) => {
+    if (event.latlng) {
+        currentAmbulancia.value.latitude = event.latlng.lat;
+        currentAmbulancia.value.longitude = event.latlng.lng;
     }
-  })
-}
+};
 </script>
 
-<style>
-.leaflet-container {
-  height: 100%;
-  width: 100%;
+<style scoped>
+.input-field {
+  @apply w-full px-4 py-2 border rounded-lg transition-colors duration-300;
+}
+
+.btn-primary {
+  @apply bg-primary-600 hover:bg-primary-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105;
+}
+
+.btn-secondary {
+  @apply bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105;
+}
+
+.btn-danger {
+  @apply bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105;
+}
+
+/* Custom scrollbar for modal */
+.max-h-\[90vh\] {
+  scrollbar-width: thin;
+  scrollbar-color: #4a5568 #2d3748;
+}
+
+.max-h-\[90vh\]::-webkit-scrollbar {
+  width: 8px;
+}
+
+.max-h-\[90vh\]::-webkit-scrollbar-track {
+  background: #2d3748;
+}
+
+.max-h-\[90vh\]::-webkit-scrollbar-thumb {
+  background-color: #4a5568;
+  border-radius: 10px;
+  border: 2px solid #2d3748;
 }
 </style>

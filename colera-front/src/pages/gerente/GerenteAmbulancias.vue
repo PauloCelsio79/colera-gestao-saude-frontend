@@ -1,9 +1,9 @@
 <template>
-  <div class="bg-white shadow rounded-lg">
+  <div class="card">
     <!-- Header -->
-    <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
+    <div class="px-4 py-5 border-b border-secondary-700 sm:px-6">
       <div class="flex justify-between items-center">
-        <h3 class="text-lg leading-6 font-medium text-gray-900">
+        <h3 class="text-lg leading-6 font-medium text-secondary-100">
           Gerenciamento de Ambulâncias
         </h3>
       </div>
@@ -11,41 +11,41 @@
 
     <!-- Table -->
     <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+      <table class="min-w-full divide-y divide-secondary-700">
+        <thead class="bg-secondary-700">
           <tr>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">
               Placa
             </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">
               Modelo
             </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">
               Hospital
             </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">
               Status
             </th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="ambulancia in ambulancias" :key="ambulancia.id">
+        <tbody class="bg-secondary-800 divide-y divide-secondary-700">
+          <tr v-for="ambulancia in ambulancias" :key="ambulancia.id" class="hover:bg-secondary-700">
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm font-medium text-gray-900">{{ ambulancia.placa }}</div>
+              <div class="text-sm font-medium text-secondary-100">{{ ambulancia.placa }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-500">{{ ambulancia.modelo }}</div>
+              <div class="text-sm text-secondary-400">{{ ambulancia.modelo }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-500">{{ getHospitalName(ambulancia.hospital_id) }}</div>
+              <div class="text-sm text-secondary-400">{{ getHospitalName(ambulancia.hospital_id) }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <span
                 :class="{
                   'px-2 inline-flex text-xs leading-5 font-semibold rounded-full': true,
-                  'bg-green-100 text-green-800': ambulancia.status === 'disponivel',
-                  'bg-yellow-100 text-yellow-800': ambulancia.status === 'em_deslocamento',
-                  'bg-red-100 text-red-800': ambulancia.status === 'em_manutencao'
+                  'bg-green-800 text-green-100': ambulancia.status === 'disponivel',
+                  'bg-yellow-800 text-yellow-100': ambulancia.status === 'em_deslocamento',
+                  'bg-red-800 text-red-100': ambulancia.status === 'em_manutencao'
                 }"
               >
                 {{ ambulancia.status }}

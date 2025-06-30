@@ -1,15 +1,15 @@
 <template>
   <div class="space-y-6">
     <!-- Formulário de Relatório -->
-    <div class="bg-white shadow rounded-lg">
+    <div class="card">
       <div class="px-4 py-5 sm:p-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">
+        <h3 class="text-lg font-medium text-secondary-100 mb-4">
           Gerar Relatório
         </h3>
         <form @submit.prevent="gerarRelatorio" class="space-y-4">
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label class="block text-sm font-medium text-gray-700">
+              <label class="block text-sm font-medium text-secondary-300">
                 Tipo de Relatório
               </label>
               <select v-model="form.tipo" class="input-field" required>
@@ -19,7 +19,7 @@
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700">
+              <label class="block text-sm font-medium text-secondary-300">
                 Formato
               </label>
               <select v-model="form.formato" class="input-field" required>
@@ -32,7 +32,7 @@
 
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label class="block text-sm font-medium text-gray-700">
+              <label class="block text-sm font-medium text-secondary-300">
                 Data Inicial
               </label>
               <input
@@ -43,7 +43,7 @@
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700">
+              <label class="block text-sm font-medium text-secondary-300">
                 Data Final
               </label>
               <input
@@ -58,7 +58,7 @@
           <!-- Filtros Adicionais -->
           <div v-if="form.tipo === 'casos_por_regiao'" class="space-y-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700">
+              <label class="block text-sm font-medium text-secondary-300">
                 Nível de Risco
               </label>
               <select v-model="form.filtros.nivel_risco" class="input-field">
@@ -72,7 +72,7 @@
 
           <div v-if="form.tipo === 'ocupacao_hospitais'" class="space-y-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700">
+              <label class="block text-sm font-medium text-secondary-300">
                 Status do Encaminhamento
               </label>
               <select v-model="form.filtros.status_encaminhamento" class="input-field">
@@ -98,33 +98,33 @@
     </div>
 
     <!-- Histórico de Relatórios -->
-    <div class="bg-white shadow rounded-lg">
+    <div class="card">
       <div class="px-4 py-5 sm:px-6">
-        <h3 class="text-lg font-medium text-gray-900">
+        <h3 class="text-lg font-medium text-secondary-100">
           Histórico de Relatórios
         </h3>
       </div>
-      <div class="border-t border-gray-200">
-        <ul role="list" class="divide-y divide-gray-200">
-          <li v-for="relatorio in relatorios" :key="relatorio.id" class="px-4 py-4 sm:px-6">
+      <div class="border-t border-secondary-700">
+        <ul role="list" class="divide-y divide-secondary-700">
+          <li v-for="relatorio in relatorios" :key="relatorio.id" class="px-4 py-4 sm:px-6 hover:bg-secondary-700/50">
             <div class="flex items-center justify-between">
               <div class="flex items-center">
                 <div class="ml-3">
-                  <p class="text-sm font-medium text-gray-900">
+                  <p class="text-sm font-medium text-secondary-100">
                     {{ getTipoRelatorioLabel(relatorio.tipo) }}
                   </p>
-                  <p class="text-sm text-gray-500">
+                  <p class="text-sm text-secondary-400">
                     {{ formatDate(relatorio.created_at) }}
                   </p>
                 </div>
               </div>
               <div class="flex items-center space-x-4">
-                <span class="text-sm text-gray-500">
+                <span class="text-sm text-secondary-400 font-mono bg-secondary-700 px-2 py-1 rounded">
                   {{ relatorio.formato.toUpperCase() }}
                 </span>
                 <button
                   @click="downloadRelatorio(relatorio)"
-                  class="text-primary-600 hover:text-primary-900"
+                  class="text-primary-500 hover:text-primary-400"
                 >
                   Download
                 </button>

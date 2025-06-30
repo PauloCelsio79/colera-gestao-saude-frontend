@@ -1,21 +1,21 @@
 <template>
-  <div class="bg-white shadow rounded-lg">
+  <div class="card">
     <!-- Header -->
-    <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
+    <div class="px-4 py-5 border-b border-secondary-700 sm:px-6">
       <div class="flex justify-between items-center">
-        <h3 class="text-lg leading-6 font-medium text-gray-900">
+        <h3 class="text-lg leading-6 font-medium text-secondary-100">
           Gerenciamento de Estruturas
         </h3>
         <div class="flex space-x-4">
           <button
             @click="openNewModal('gabinete')"
-            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            class="btn-primary"
           >
             Novo Gabinete
           </button>
           <button
             @click="openNewModal('direcao')"
-            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            class="btn-primary"
           >
             Nova Direção
           </button>
@@ -24,19 +24,19 @@
     </div>
 
     <!-- Tabs -->
-    <div class="border-b border-gray-200">
+    <div class="border-b border-secondary-700">
       <nav class="-mb-px flex">
         <button
           @click="activeTab = 'gabinetes'"
-          class="w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm"
-          :class="activeTab === 'gabinetes' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+          class="w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm transition-colors duration-200"
+          :class="activeTab === 'gabinetes' ? 'border-primary-500 text-primary-400' : 'border-transparent text-secondary-400 hover:text-secondary-200 hover:border-secondary-500'"
         >
           Gabinetes Provinciais
         </button>
         <button
           @click="activeTab = 'direcoes'"
-          class="w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm"
-          :class="activeTab === 'direcoes' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+          class="w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm transition-colors duration-200"
+          :class="activeTab === 'direcoes' ? 'border-primary-500 text-primary-400' : 'border-transparent text-secondary-400 hover:text-secondary-200 hover:border-secondary-500'"
         >
           Direções Municipais
         </button>
@@ -44,62 +44,62 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="p-4 text-center">
+    <div v-if="loading" class="p-6 text-center">
       <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary-500 border-t-transparent"></div>
-      <p class="mt-2 text-gray-600">Carregando...</p>
+      <p class="mt-2 text-secondary-400">Carregando...</p>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="p-4 text-center">
-      <p class="text-red-600">{{ error }}</p>
-      <button @click="fetchData" class="mt-2 text-primary-600 hover:text-primary-700">
+    <div v-else-if="error" class="p-6 text-center">
+      <p class="text-red-400">{{ error }}</p>
+      <button @click="fetchData" class="mt-2 text-primary-500 hover:text-primary-400">
         Tentar novamente
       </button>
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="(activeTab === 'gabinetes' && !gabinetes.length) || (activeTab === 'direcoes' && !direcoes.length)" class="p-4 text-center">
-      <p class="text-gray-600">Nenhum registro encontrado</p>
+    <div v-else-if="(activeTab === 'gabinetes' && !gabinetes.length) || (activeTab === 'direcoes' && !direcoes.length)" class="p-6 text-center">
+      <p class="text-secondary-400">Nenhum registro encontrado</p>
     </div>
 
     <!-- Tables -->
     <div v-else class="overflow-x-auto">
       <!-- Gabinetes Table -->
-      <table v-if="activeTab === 'gabinetes'" class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+      <table v-if="activeTab === 'gabinetes'" class="min-w-full divide-y divide-secondary-700">
+        <thead class="bg-secondary-700">
           <tr>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Província</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Diretor</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contato</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">Nome</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">Província</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">Diretor</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">Contato</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">Ações</th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="gabinete in gabinetes" :key="gabinete.id">
+        <tbody class="bg-secondary-800 divide-y divide-secondary-700">
+          <tr v-for="gabinete in gabinetes" :key="gabinete.id" class="hover:bg-secondary-700">
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm font-medium text-gray-900">{{ gabinete.nome }}</div>
+              <div class="text-sm font-medium text-secondary-100">{{ gabinete.nome }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900">{{ gabinete.provincia }}</div>
+              <div class="text-sm text-secondary-100">{{ gabinete.provincia }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900">{{ gabinete.diretor }}</div>
+              <div class="text-sm text-secondary-100">{{ gabinete.diretor }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900">{{ gabinete.telefone }}</div>
-              <div class="text-sm text-gray-500">{{ gabinete.email }}</div>
+              <div class="text-sm text-secondary-100">{{ gabinete.telefone }}</div>
+              <div class="text-sm text-secondary-400">{{ gabinete.email }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
               <button
                 @click="editItem(gabinete, 'gabinete')"
-                class="text-primary-600 hover:text-primary-900 mr-4"
+                class="text-primary-500 hover:text-primary-400 mr-4"
               >
                 Editar
               </button>
               <button
                 @click="deleteItem(gabinete.id, 'gabinete')"
-                class="text-red-600 hover:text-red-900"
+                class="text-red-500 hover:text-red-400"
               >
                 Excluir
               </button>
@@ -109,45 +109,45 @@
       </table>
 
       <!-- Direções Table -->
-      <table v-else class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+      <table v-else class="min-w-full divide-y divide-secondary-700">
+        <thead class="bg-secondary-700">
           <tr>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Município</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gabinete</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Diretor</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contato</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">Nome</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">Município</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">Gabinete</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">Diretor</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">Contato</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">Ações</th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="direcao in direcoes" :key="direcao.id">
+        <tbody class="bg-secondary-800 divide-y divide-secondary-700">
+          <tr v-for="direcao in direcoes" :key="direcao.id" class="hover:bg-secondary-700">
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm font-medium text-gray-900">{{ direcao.nome }}</div>
+              <div class="text-sm font-medium text-secondary-100">{{ direcao.nome }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900">{{ direcao.municipio }}</div>
+              <div class="text-sm text-secondary-100">{{ direcao.municipio }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900">{{ getGabineteName(direcao.gabinete_provincial_id) }}</div>
+              <div class="text-sm text-secondary-100">{{ getGabineteName(direcao.gabinete_provincial_id) }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900">{{ direcao.diretor }}</div>
+              <div class="text-sm text-secondary-100">{{ direcao.diretor }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900">{{ direcao.telefone }}</div>
-              <div class="text-sm text-gray-500">{{ direcao.email }}</div>
+              <div class="text-sm text-secondary-100">{{ direcao.telefone }}</div>
+              <div class="text-sm text-secondary-400">{{ direcao.email }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
               <button
                 @click="editItem(direcao, 'direcao')"
-                class="text-primary-600 hover:text-primary-900 mr-4"
+                class="text-primary-500 hover:text-primary-400 mr-4"
               >
                 Editar
               </button>
               <button
                 @click="deleteItem(direcao.id, 'direcao')"
-                class="text-red-600 hover:text-red-900"
+                class="text-red-500 hover:text-red-400"
               >
                 Excluir
               </button>
@@ -161,39 +161,39 @@
     <div v-if="showModal" class="fixed z-10 inset-0 overflow-y-auto">
       <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <div class="fixed inset-0 transition-opacity" aria-hidden="true">
-          <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+          <div class="absolute inset-0 bg-black opacity-75"></div>
         </div>
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div class="inline-block align-bottom bg-secondary-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
           <form @submit.prevent="handleSubmit" class="p-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">
+            <h3 class="text-lg font-medium text-secondary-100 mb-4">
               {{ editingItem ? 'Editar' : 'Novo' }} {{ modalType === 'gabinete' ? 'Gabinete Provincial' : 'Direção Municipal' }}
             </h3>
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700">Nome</label>
+                <label class="block text-sm font-medium text-secondary-300">Nome</label>
                 <input
                   v-model="form.nome"
                   type="text"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                  class="input-field mt-1"
                   required
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700">
+                <label class="block text-sm font-medium text-secondary-300">
                   {{ modalType === 'gabinete' ? 'Província' : 'Município' }}
                 </label>
                 <input
                   v-model="form[modalType === 'gabinete' ? 'provincia' : 'municipio']"
                   type="text"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                  class="input-field mt-1"
                   required
                 />
               </div>
               <div v-if="modalType === 'direcao'">
-                <label class="block text-sm font-medium text-gray-700">Gabinete Provincial</label>
+                <label class="block text-sm font-medium text-secondary-300">Gabinete Provincial</label>
                 <select
                   v-model="form.gabinete_provincial_id"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                  class="input-field mt-1"
                   required
                 >
                   <option v-for="gabinete in gabinetes" :key="gabinete.id" :value="gabinete.id">
@@ -202,63 +202,63 @@
                 </select>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700">Endereço</label>
+                <label class="block text-sm font-medium text-secondary-300">Endereço</label>
                 <input
                   v-model="form.endereco"
                   type="text"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                  class="input-field mt-1"
                   required
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700">Telefone</label>
+                <label class="block text-sm font-medium text-secondary-300">Telefone</label>
                 <input
                   v-model="form.telefone"
                   type="text"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                  class="input-field mt-1"
                   required
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700">Email</label>
+                <label class="block text-sm font-medium text-secondary-300">Email</label>
                 <input
                   v-model="form.email"
                   type="email"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                  class="input-field mt-1"
                   required
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700">Diretor</label>
+                <label class="block text-sm font-medium text-secondary-300">Diretor</label>
                 <input
                   v-model="form.diretor"
                   type="text"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                  class="input-field mt-1"
                   required
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700">Observações</label>
+                <label class="block text-sm font-medium text-secondary-300">Observações</label>
                 <textarea
                   v-model="form.observacoes"
                   rows="3"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                  class="input-field mt-1"
                 ></textarea>
               </div>
             </div>
-            <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-              <button
-                type="submit"
-                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:col-start-2 sm:text-sm"
-              >
-                {{ editingItem ? 'Salvar' : 'Criar' }}
-              </button>
-              <button
+            <div class="mt-6 flex justify-end space-x-3">
+               <button
                 type="button"
                 @click="closeModal"
-                class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:col-start-1 sm:text-sm"
+                class="px-4 py-2 bg-secondary-600 text-secondary-100 rounded-md hover:bg-secondary-500"
               >
                 Cancelar
+              </button>
+              <button
+                type="submit"
+                class="btn-primary"
+              >
+                {{ editingItem ? 'Salvar' : 'Criar' }}
               </button>
             </div>
           </form>
@@ -269,8 +269,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import { ref, onMounted, computed } from 'vue'
+import api from '@/api'
 
 const activeTab = ref('gabinetes')
 const gabinetes = ref([])
@@ -299,36 +299,15 @@ const fetchData = async () => {
   
   try {
     const [gabinetesRes, direcoesRes] = await Promise.all([
-      axios.get('http://127.0.0.1:8000/api/gabinetes-provinciais', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
-      }),
-      axios.get('http://127.0.0.1:8000/api/direcoes-municipais', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
-      })
+      api.get('/gabinetes-provinciais'),
+      api.get('/direcoes-municipais')
     ])
     
-    gabinetes.value = Array.isArray(gabinetesRes.data) ? gabinetesRes.data : []
-    direcoes.value = Array.isArray(direcoesRes.data) ? direcoesRes.data : []
+    gabinetes.value = (gabinetesRes.data && gabinetesRes.data.data) ? gabinetesRes.data.data : gabinetesRes.data
+    direcoes.value = (direcoesRes.data && direcoesRes.data.data) ? direcoesRes.data.data : direcoesRes.data
   } catch (err) {
-    console.error('Erro ao carregar dados:', err)
-    error.value = 'Erro ao carregar dados. Por favor, tente novamente.'
-    if (err.response) {
-      console.error('Status do erro:', err.response.status)
-      console.error('Dados do erro:', err.response.data)
-      if (err.response.status === 404) {
-        error.value = 'API não encontrada. Verifique se o servidor está rodando.'
-      } else if (err.response.status === 401) {
-        error.value = 'Sessão expirada. Por favor, faça login novamente.'
-      }
-    }
+    console.error('Erro ao buscar dados:', err)
+    error.value = 'Falha ao carregar os dados. Por favor, tente novamente.'
   } finally {
     loading.value = false
   }
@@ -381,85 +360,34 @@ const closeModal = () => {
 }
 
 const handleSubmit = async () => {
+  const isEdit = !!editingItem.value
+  const url = modalType.value === 'gabinete'
+    ? (isEdit ? `/gabinetes-provinciais/${form.value.id}` : '/gabinetes-provinciais')
+    : (isEdit ? `/direcoes-municipais/${form.value.id}` : '/direcoes-municipais')
+  
+  const method = isEdit ? 'put' : 'post'
+
   try {
-    const data = { ...form.value }
-    const url = modalType.value === 'gabinete' 
-      ? 'http://127.0.0.1:8000/api/gabinetes-provinciais'
-      : 'http://127.0.0.1:8000/api/direcoes-municipais'
-    
-    if (editingItem.value) {
-      await axios.put(`${url}/${editingItem.value.id}`, data, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
-      })
-    } else {
-      await axios.post(url, data, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
-      })
-    }
-    
+    await api[method](url, form.value)
     await fetchData()
     closeModal()
-  } catch (error) {
-    console.error('Erro ao salvar:', error)
-    if (error.response) {
-      console.error('Detalhes do erro:', error.response.data)
-      if (error.response.status === 404) {
-        alert('API não encontrada. Verifique se o servidor está rodando.')
-      } else if (error.response.status === 401) {
-        alert('Sessão expirada. Por favor, faça login novamente.')
-      } else {
-        const mensagensErro = error.response.data.errors || {}
-        const mensagem = Object.entries(mensagensErro)
-          .map(([campo, erros]) => `${campo}: ${erros.join(', ')}`)
-          .join('\n')
-        alert(`Erro ao salvar:\n${mensagem}`)
-      }
-    } else {
-      alert('Erro ao salvar. Verifique a conexão com o servidor.')
-    }
+  } catch (err) {
+    console.error('Erro ao salvar:', err)
+    // Adicionar notificação de erro
   }
 }
 
 const deleteItem = async (id, type) => {
-  if (!id) return
-  if (!confirm('Tem certeza que deseja excluir este registro?')) return
+  if (!confirm(`Tem certeza que deseja excluir este item?`)) return
   
+  const url = type === 'gabinete' ? `/gabinetes-provinciais/${id}` : `/direcoes-municipais/${id}`
+
   try {
-    const url = type === 'gabinete'
-      ? `http://127.0.0.1:8000/api/gabinetes-provinciais/${id}`
-      : `http://127.0.0.1:8000/api/direcoes-municipais/${id}`
-    
-    await axios.delete(url, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    })
-    
+    await api.delete(url)
     await fetchData()
-  } catch (error) {
-    console.error('Erro ao excluir:', error)
-    if (error.response) {
-      console.error('Detalhes do erro:', error.response.data)
-      if (error.response.status === 404) {
-        alert('API não encontrada. Verifique se o servidor está rodando.')
-      } else if (error.response.status === 401) {
-        alert('Sessão expirada. Por favor, faça login novamente.')
-      } else {
-        alert(error.response.data.message || 'Erro ao excluir registro')
-      }
-    } else {
-      alert('Erro ao excluir registro. Verifique a conexão com o servidor.')
-    }
+  } catch (err) {
+    console.error(`Erro ao excluir ${type}:`, err)
+    // Adicionar notificação de erro
   }
 }
 

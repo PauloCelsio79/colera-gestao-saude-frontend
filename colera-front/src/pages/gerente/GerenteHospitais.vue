@@ -1,16 +1,16 @@
 <template>
-  <div class="bg-white shadow rounded-lg">
+  <div class="card">
     <!-- Header -->
-    <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
+    <div class="px-4 py-5 border-b border-secondary-700 sm:px-6">
       <div class="flex justify-between items-center">
-        <h3 class="text-lg leading-6 font-medium text-gray-900">
+        <h3 class="text-lg leading-6 font-medium text-secondary-100">
           Gerenciamento de Hospitais
         </h3>
       </div>
     </div>
 
     <!-- Filtros -->
-    <div class="px-4 py-2 grid grid-cols-1 sm:grid-cols-5 gap-2">
+    <div class="px-4 py-4 grid grid-cols-1 sm:grid-cols-5 gap-4 bg-secondary-700/50 border-b border-secondary-700">
       <input v-model="filtros.nome" type="text" placeholder="Filtrar por nome" class="input-field" />
       <input v-model="filtros.tipo" type="text" placeholder="Filtrar por tipo" class="input-field" />
       <input v-model="filtros.leitos_totais" type="number" placeholder="Leitos totais" class="input-field" />
@@ -23,66 +23,63 @@
     </div>
 
     <!-- Total de hospitais -->
-    <div class="px-4 py-2 text-sm text-gray-700 font-semibold">
+    <div class="px-4 py-2 text-sm text-secondary-400 font-semibold">
       Total: {{ hospitaisFiltrados.length }} hospitais (de {{ hospitais.length }})
     </div>
 
     <!-- Table -->
     <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+      <table class="min-w-full divide-y divide-secondary-700">
+        <thead class="bg-secondary-700">
           <tr>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">
               Nome
             </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">
               Tipo
             </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">
               Leitos Totais
             </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">
               Leitos Disponíveis
             </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">
               Status
             </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">
               Ações
             </th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="hospital in hospitaisFiltrados" :key="hospital.id"
-              :class="{'bg-red-100 text-red-800': hospital.leitos_disponiveis === 0}">
+        <tbody class="bg-secondary-800 divide-y divide-secondary-700">
+          <tr v-for="hospital in hospitaisFiltrados" :key="hospital.id" class="hover:bg-secondary-700"
+              :class="{'bg-red-900/50 text-red-200': hospital.leitos_disponiveis === 0}">
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm font-medium text-gray-900">{{ hospital.nome }}</div>
+              <div class="text-sm font-medium text-secondary-100">{{ hospital.nome }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-500">{{ hospital.tipo }}</div>
+              <div class="text-sm text-secondary-400">{{ hospital.tipo }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-500">{{ hospital.leitos_totais }}</div>
+              <div class="text-sm text-secondary-400">{{ hospital.leitos_totais }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-500">{{ hospital.leitos_disponiveis }}</div>
+              <div class="text-sm font-semibold" :class="hospital.leitos_disponiveis > 0 ? 'text-green-400' : 'text-red-400'">{{ hospital.leitos_disponiveis }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <span
                 :class="{
                   'px-2 inline-flex text-xs leading-5 font-semibold rounded-full': true,
-                  'bg-green-100 text-green-800': hospital.ativo,
-                  'bg-red-100 text-red-800': !hospital.ativo
+                  'bg-green-800 text-green-100': hospital.ativo,
+                  'bg-red-800 text-red-100': !hospital.ativo
                 }"
               >
                 {{ hospital.ativo ? 'Ativo' : 'Inativo' }}
               </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-              <button
-                @click="verDetalhes(hospital.id)"
-                class="text-indigo-600 hover:text-indigo-900"
-              >
+              <button @click="verDetalhes(hospital.id)" class="text-primary-500 hover:text-primary-400">
                 Ver Detalhes
               </button>
             </td>
@@ -92,14 +89,11 @@
     </div>
 
     <!-- Modal de Detalhes -->
-    <div v-if="showModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
-      <div class="bg-white rounded-lg p-6 max-w-2xl w-full">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-medium text-gray-900">Detalhes do Hospital</h3>
-          <button
-            @click="closeModal"
-            class="text-gray-400 hover:text-gray-500"
-          >
+    <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+      <div class="card p-0 max-w-2xl w-full">
+        <div class="flex justify-between items-center p-6 border-b border-secondary-700">
+          <h3 class="text-lg font-medium text-secondary-100">Detalhes do Hospital</h3>
+          <button @click="closeModal" class="text-secondary-400 hover:text-white">
             <span class="sr-only">Fechar</span>
             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -107,68 +101,68 @@
           </button>
         </div>
 
-        <div v-if="hospitalDetalhes" class="space-y-4">
+        <div v-if="hospitalDetalhes" class="space-y-4 p-6">
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <p class="text-sm font-medium text-gray-500">Nome</p>
-              <p class="mt-1 text-sm text-gray-900">{{ hospitalDetalhes.nome }}</p>
+              <p class="text-sm font-medium text-secondary-500">Nome</p>
+              <p class="mt-1 text-sm text-secondary-200">{{ hospitalDetalhes.nome }}</p>
             </div>
             <div>
-              <p class="text-sm font-medium text-gray-500">Tipo</p>
-              <p class="mt-1 text-sm text-gray-900">{{ hospitalDetalhes.tipo }}</p>
+              <p class="text-sm font-medium text-secondary-500">Tipo</p>
+              <p class="mt-1 text-sm text-secondary-200">{{ hospitalDetalhes.tipo }}</p>
             </div>
             <div>
-              <p class="text-sm font-medium text-gray-500">Endereço</p>
-              <p class="mt-1 text-sm text-gray-900">{{ hospitalDetalhes.endereco }}</p>
+              <p class="text-sm font-medium text-secondary-500">Endereço</p>
+              <p class="mt-1 text-sm text-secondary-200">{{ hospitalDetalhes.endereco }}</p>
             </div>
             <div>
-              <p class="text-sm font-medium text-gray-500">Telefone</p>
-              <p class="mt-1 text-sm text-gray-900">{{ hospitalDetalhes.telefone }}</p>
+              <p class="text-sm font-medium text-secondary-500">Telefone</p>
+              <p class="mt-1 text-sm text-secondary-200">{{ hospitalDetalhes.telefone }}</p>
             </div>
             <div>
-              <p class="text-sm font-medium text-gray-500">Email</p>
-              <p class="mt-1 text-sm text-gray-900">{{ hospitalDetalhes.email }}</p>
+              <p class="text-sm font-medium text-secondary-500">Email</p>
+              <p class="mt-1 text-sm text-secondary-200">{{ hospitalDetalhes.email }}</p>
             </div>
             <div>
-              <p class="text-sm font-medium text-gray-500">Diretor</p>
-              <p class="mt-1 text-sm text-gray-900">{{ hospitalDetalhes.diretor }}</p>
+              <p class="text-sm font-medium text-secondary-500">Diretor</p>
+              <p class="mt-1 text-sm text-secondary-200">{{ hospitalDetalhes.diretor }}</p>
             </div>
             <div>
-              <p class="text-sm font-medium text-gray-500">Leitos Totais</p>
-              <p class="mt-1 text-sm text-gray-900">{{ hospitalDetalhes.leitos_totais }}</p>
+              <p class="text-sm font-medium text-secondary-500">Leitos Totais</p>
+              <p class="mt-1 text-sm text-secondary-200">{{ hospitalDetalhes.leitos_totais }}</p>
             </div>
             <div>
-              <p class="text-sm font-medium text-gray-500">Leitos Disponíveis</p>
-              <p class="mt-1 text-sm text-gray-900">{{ hospitalDetalhes.leitos_disponiveis }}</p>
+              <p class="text-sm font-medium text-secondary-500">Leitos Disponíveis</p>
+              <p class="mt-1 text-sm text-secondary-200">{{ hospitalDetalhes.leitos_disponiveis }}</p>
             </div>
             <div>
-              <p class="text-sm font-medium text-gray-500">Ponto de Emergência</p>
-              <p class="mt-1 text-sm text-gray-900">{{ hospitalDetalhes.ponto_emergencia ? 'Sim' : 'Não' }}</p>
+              <p class="text-sm font-medium text-secondary-500">Ponto de Emergência</p>
+              <p class="mt-1 text-sm text-secondary-200">{{ hospitalDetalhes.ponto_emergencia ? 'Sim' : 'Não' }}</p>
             </div>
             <div>
-              <p class="text-sm font-medium text-gray-500">Status</p>
-              <p class="mt-1 text-sm text-gray-900">{{ hospitalDetalhes.ativo ? 'Ativo' : 'Inativo' }}</p>
+              <p class="text-sm font-medium text-secondary-500">Status</p>
+              <p class="mt-1 text-sm text-secondary-200">{{ hospitalDetalhes.ativo ? 'Ativo' : 'Inativo' }}</p>
             </div>
           </div>
 
           <div v-if="hospitalDetalhes.servicos_emergencia">
-            <p class="text-sm font-medium text-gray-500">Serviços de Emergência</p>
-            <p class="mt-1 text-sm text-gray-900">{{ hospitalDetalhes.servicos_emergencia }}</p>
+            <p class="text-sm font-medium text-secondary-500">Serviços de Emergência</p>
+            <p class="mt-1 text-sm text-secondary-200">{{ hospitalDetalhes.servicos_emergencia }}</p>
           </div>
 
           <div v-if="hospitalDetalhes.capacidade_emergencia">
-            <p class="text-sm font-medium text-gray-500">Capacidade de Emergência</p>
-            <p class="mt-1 text-sm text-gray-900">{{ hospitalDetalhes.capacidade_emergencia }} leitos</p>
+            <p class="text-sm font-medium text-secondary-500">Capacidade de Emergência</p>
+            <p class="mt-1 text-sm text-secondary-200">{{ hospitalDetalhes.capacidade_emergencia }} leitos</p>
           </div>
 
           <div v-if="hospitalDetalhes.observacoes">
-            <p class="text-sm font-medium text-gray-500">Observações</p>
-            <p class="mt-1 text-sm text-gray-900">{{ hospitalDetalhes.observacoes }}</p>
+            <p class="text-sm font-medium text-secondary-500">Observações</p>
+            <p class="mt-1 text-sm text-secondary-200">{{ hospitalDetalhes.observacoes }}</p>
           </div>
         </div>
 
-        <div v-else class="text-center py-4">
-          <p class="text-gray-500">Carregando detalhes...</p>
+        <div v-else class="text-center py-10">
+          <p class="text-secondary-500">Carregando detalhes...</p>
         </div>
       </div>
     </div>

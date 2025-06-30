@@ -1,15 +1,15 @@
 <template>
   <PainelPrevencaoColera />
-  <div class="bg-white shadow rounded-lg">
+  <div class="card">
     <!-- Header -->
-    <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
+    <div class="px-4 py-5 border-b border-secondary-700 sm:px-6">
       <div class="flex justify-between items-center">
-        <h3 class="text-lg leading-6 font-medium text-gray-900">
+        <h3 class="text-lg leading-6 font-medium text-secondary-100">
           Gerenciamento de Usuários
         </h3>
         <button
           @click="openNewUserModal"
-          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+          class="btn-primary"
         >
           Novo Usuário
         </button>
@@ -17,22 +17,22 @@
     </div>
 
     <!-- Filtros -->
-    <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
+    <div class="px-4 py-4 bg-secondary-700 border-b border-secondary-600">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700">Nome</label>
+          <label class="block text-sm font-medium text-secondary-300">Nome</label>
           <input
             v-model="filtros.nome"
             type="text"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+            class="input-field mt-1"
             placeholder="Buscar por nome..."
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Tipo</label>
+          <label class="block text-sm font-medium text-secondary-300">Tipo</label>
           <select
             v-model="filtros.tipo"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+            class="input-field mt-1"
           >
             <option value="">Todos</option>
             <option value="admin">Admin</option>
@@ -42,18 +42,18 @@
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Email</label>
+          <label class="block text-sm font-medium text-secondary-300">Email</label>
           <input
             v-model="filtros.email"
             type="text"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+            class="input-field mt-1"
             placeholder="Buscar por email..."
           />
         </div>
         <div class="flex items-end">
           <button
             @click="aplicarFiltros"
-            class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            class="btn-primary w-full justify-center"
           >
             Filtrar
           </button>
@@ -63,55 +63,55 @@
 
     <!-- Table -->
     <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+      <table class="min-w-full divide-y divide-secondary-700">
+        <thead class="bg-secondary-700">
           <tr>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">
               Nome
             </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">
               Email
             </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">
               Tipo
             </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">
               Telefone
             </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">
               Status
             </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">
               Ações
             </th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
+        <tbody class="bg-secondary-800 divide-y divide-secondary-700">
           <template v-if="usuariosFiltrados.length > 0">
-            <tr v-for="usuario in usuariosFiltrados" :key="usuario.id" class="hover:bg-gray-50">
+            <tr v-for="usuario in usuariosFiltrados" :key="usuario.id" class="hover:bg-secondary-700">
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">{{ usuario.name }}</div>
+                <div class="text-sm font-medium text-secondary-100">{{ usuario.name }}</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-500">{{ usuario.email }}</div>
+                <div class="text-sm text-secondary-300">{{ usuario.email }}</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" :class="{
-                  'bg-purple-100 text-purple-800': usuario.tipo === 'admin',
-                  'bg-blue-100 text-blue-800': usuario.tipo === 'medico',
-                  'bg-green-100 text-green-800': usuario.tipo === 'gestor',
-                  'bg-yellow-100 text-yellow-800': usuario.tipo === 'tecnico'
+                  'bg-purple-800 text-purple-100': usuario.tipo === 'admin',
+                  'bg-blue-800 text-blue-100': usuario.tipo === 'medico',
+                  'bg-green-800 text-green-100': usuario.tipo === 'gestor',
+                  'bg-yellow-800 text-yellow-100': usuario.tipo === 'tecnico'
                 }">
                   {{ formatTipo(usuario.tipo) }}
                 </span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-secondary-300">
                 {{ usuario.telefone }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" :class="{
-                  'bg-green-100 text-green-800': usuario.ativo,
-                  'bg-red-100 text-red-800': !usuario.ativo
+                  'bg-green-800 text-green-100': usuario.ativo,
+                  'bg-red-800 text-red-100': !usuario.ativo
                 }">
                   {{ usuario.ativo ? 'Ativo' : 'Bloqueado' }}
                 </span>
@@ -121,8 +121,8 @@
                   @click="toggleAcesso(usuario)"
                   class="px-3 py-1 rounded-md text-sm font-medium transition-colors duration-200"
                   :class="{
-                    'bg-red-100 text-red-700 hover:bg-red-200': usuario.ativo,
-                    'bg-green-100 text-green-700 hover:bg-green-200': !usuario.ativo
+                    'bg-red-800 text-red-100 hover:bg-red-700': usuario.ativo,
+                    'bg-green-800 text-green-100 hover:bg-green-700': !usuario.ativo
                   }"
                   :disabled="usuarioLogado && usuarioLogado.id === usuario.id"
                   :title="usuarioLogado && usuarioLogado.id === usuario.id ? 'Você não pode bloquear seu próprio usuário.' : (usuario.ativo ? 'Bloquear' : 'Permitir')"
@@ -131,13 +131,13 @@
                 </button>
                 <button
                   @click="editUser(usuario)"
-                  class="ml-2 text-primary-600 hover:text-primary-900"
+                  class="ml-2 text-primary-500 hover:text-primary-400"
                 >
                   Editar
                 </button>
                 <button
                   @click="deleteUser(usuario.id)"
-                  class="ml-2 text-red-600 hover:text-red-900"
+                  class="ml-2 text-red-500 hover:text-red-400"
                   :disabled="usuarioLogado && usuarioLogado.id === usuario.id"
                   :title="usuarioLogado && usuarioLogado.id === usuario.id ? 'Você não pode excluir seu próprio usuário.' : 'Excluir'"
                 >
@@ -147,7 +147,7 @@
             </tr>
           </template>
           <tr v-else>
-            <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+            <td colspan="6" class="px-6 py-4 text-center text-secondary-500">
               Nenhum usuário encontrado
             </td>
           </tr>
@@ -159,37 +159,37 @@
     <div v-if="showModal" class="fixed z-10 inset-0 overflow-y-auto">
       <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <div class="fixed inset-0 transition-opacity" aria-hidden="true">
-          <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+          <div class="absolute inset-0 bg-black opacity-75"></div>
         </div>
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div class="inline-block align-bottom bg-secondary-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
           <form @submit.prevent="handleSubmit" class="p-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">
+            <h3 class="text-lg font-medium text-secondary-100 mb-4">
               {{ editingUser ? 'Editar Usuário' : 'Novo Usuário' }}
             </h3>
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700">Nome</label>
+                <label class="block text-sm font-medium text-secondary-300">Nome</label>
                 <input
                   v-model="form.name"
                   type="text"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                  class="input-field mt-1"
                   required
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700">Email</label>
+                <label class="block text-sm font-medium text-secondary-300">Email</label>
                 <input
                   v-model="form.email"
                   type="email"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                  class="input-field mt-1"
                   required
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700">Tipo</label>
+                <label class="block text-sm font-medium text-secondary-300">Tipo</label>
                 <select
                   v-model="form.tipo"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                  class="input-field mt-1"
                   required
                 >
                   <option value="admin">Admin</option>
@@ -199,29 +199,29 @@
                 </select>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700">Telefone</label>
+                <label class="block text-sm font-medium text-secondary-300">Telefone</label>
                 <input
                   v-model="form.telefone"
                   type="tel"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                  class="input-field mt-1"
                   required
                 />
               </div>
               <div v-if="!editingUser">
-                <label class="block text-sm font-medium text-gray-700">Senha</label>
+                <label class="block text-sm font-medium text-secondary-300">Senha</label>
                 <input
                   v-model="form.password"
                   type="password"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                  class="input-field mt-1"
                   required
                 />
               </div>
               <div v-if="!editingUser">
-                <label class="block text-sm font-medium text-gray-700">Confirmar Senha</label>
+                <label class="block text-sm font-medium text-secondary-300">Confirmar Senha</label>
                 <input
                   v-model="form.password_confirmation"
                   type="password"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                  class="input-field mt-1"
                   required
                 />
               </div>
@@ -229,14 +229,14 @@
             <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
               <button
                 type="submit"
-                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:col-start-2 sm:text-sm"
+                class="btn-primary w-full inline-flex justify-center sm:col-start-2"
               >
                 {{ editingUser ? 'Salvar' : 'Criar' }}
               </button>
               <button
                 type="button"
                 @click="closeModal"
-                class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:col-start-1 sm:text-sm"
+                class="mt-3 w-full inline-flex justify-center rounded-md border border-secondary-600 shadow-sm px-4 py-2 bg-secondary-700 text-base font-medium text-secondary-100 hover:bg-secondary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:col-start-1 sm:text-sm"
               >
                 Cancelar
               </button>
@@ -309,8 +309,9 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import axios from 'axios'
+import { useRouter } from 'vue-router'
 import PainelPrevencaoColera from '@/components/PainelPrevencaoColera.vue'
+import api from '@/api'
 
 const users = ref([])
 const showModal = ref(false)
@@ -373,13 +374,7 @@ const aplicarFiltros = () => {
 const fetchUsers = async () => {
   try {
     console.log('Buscando usuários...')
-    const response = await axios.get('http://127.0.0.1:8000/api/usuarios', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    })
+    const response = await api.get('/users')
     
     console.log('Resposta da API:', response.data)
     
@@ -458,27 +453,11 @@ const closeModal = () => {
 }
 
 const handleSubmit = async () => {
-  try {
-    if (editingUser.value) {
-      await axios.put(`http://127.0.0.1:8000/api/users/${editingUser.value.id}`, form.value, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
-      })
-    } else {
-      if (form.value.password !== form.value.password_confirmation) {
-        alert('As senhas não coincidem')
-        return
-      }
+  const url = editingUser.value ? `/users/${editingUser.value.id}` : '/users'
+  const method = editingUser.value ? 'put' : 'post'
 
-      await axios.post('http://127.0.0.1:8000/api/register', form.value, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
-      })
-    }
+  try {
+    await api[method](url, form.value)
     await fetchUsers()
     closeModal()
   } catch (error) {
@@ -493,11 +472,7 @@ const deleteUser = async (userId) => {
   if (!confirm('Tem certeza que deseja excluir este usuário?')) return
   
   try {
-    await axios.delete(`http://127.0.0.1:8000/api/users/${userId}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
-    })
+    await api.delete(`/users/${userId}`)
     await fetchUsers()
   } catch (error) {
     console.error('Erro ao excluir usuário:', error)
@@ -505,9 +480,18 @@ const deleteUser = async (userId) => {
 }
 
 // Função para abrir modal de confirmação
-const toggleAcesso = (usuario) => {
-  selectedUser.value = usuario
-  showConfirmModal.value = true
+const toggleAcesso = async (usuario) => {
+  const originalStatus = usuario.ativo
+  usuario.ativo = !usuario.ativo // Otimista
+
+  try {
+    await api.put(`/users/${usuario.id}`, { ...usuario, ativo: usuario.ativo })
+    // Opcional: pode-se atualizar o usuário com a resposta da API
+  } catch (error) {
+    console.error('Erro ao alterar o status do usuário:', error)
+    usuario.ativo = originalStatus // Reverte em caso de erro
+    // Exibir mensagem de erro
+  }
 }
 
 // Função para confirmar a alteração de acesso
@@ -515,14 +499,9 @@ const confirmarAcesso = async () => {
   try {
     const novoStatus = !selectedUser.value.ativo
     
-    const response = await axios.post('http://127.0.0.1:8000/api/admin/permitir-acesso', {
+    const response = await api.post('/admin/permitir-acesso', {
       user_id: selectedUser.value.id,
       permitir: novoStatus
-    }, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      }
     })
 
     // Atualiza o status do usuário localmente
@@ -561,5 +540,7 @@ const cancelarAcesso = () => {
   selectedUser.value = null
 }
 
-onMounted(fetchUsers)
+onMounted(() => {
+  fetchUsers()
+})
 </script>

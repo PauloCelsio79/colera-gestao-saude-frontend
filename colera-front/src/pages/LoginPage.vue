@@ -50,7 +50,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import api from '@/api'
 
 const email = ref('')
 const password = ref('')
@@ -63,16 +63,11 @@ async function handleLogin() {
   loading.value = true
   
   try {
-    const response = await axios.post(
-      'http://127.0.0.1:8000/api/login',
+    const response = await api.post(
+      '/login',
       {
         email: email.value,
         password: password.value
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json'
-        }
       }
     )
 
@@ -82,7 +77,7 @@ async function handleLogin() {
       throw new Error('Resposta inválida do servidor')
     }
 
-    localStorage.setItem('token', token)
+    localStorage.setItem('authToken', token)
     localStorage.setItem('user', JSON.stringify(user))
     
     // Redireciona baseado no tipo de usuário

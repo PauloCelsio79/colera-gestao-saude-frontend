@@ -1,122 +1,136 @@
 <template>
-  <div class="bg-white shadow rounded-lg p-8">
-    <h1 class="text-2xl font-bold mb-4">Coordenação de Transportes</h1>
-    <div v-if="erro" class="mb-4 p-2 bg-red-100 text-red-700 rounded">{{ erro }}</div>
-    <div v-if="loading" class="mb-4 text-gray-500">Carregando pedidos...</div>
+  <div class="card">
+    <!-- Header -->
+    <div class="px-4 py-5 border-b border-secondary-700 sm:px-6">
+      <h3 class="text-lg leading-6 font-medium text-secondary-100">
+        Coordenação de Transportes (Pedidos Pendentes)
+      </h3>
+    </div>
+
+    <div v-if="erro" class="m-4 p-3 bg-red-900/50 border border-red-700 text-red-200 rounded-md">{{ erro }}</div>
+    <div v-if="loading" class="p-4 text-center text-secondary-400">Carregando pedidos...</div>
+    
+    <!-- Table -->
     <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+      <table class="min-w-full divide-y divide-secondary-700">
+        <thead class="bg-secondary-700">
           <tr>
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Paciente</th>
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Hospital</th>
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Observações</th>
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">Paciente</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">Hospital</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">Data</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">Status</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">Ações</th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="enc in encaminhamentos" :key="enc.id">
-            <td class="px-4 py-2">{{ enc.triagem?.paciente?.nome || '-' }}</td>
-            <td class="px-4 py-2">{{ enc.hospital?.nome || '-' }}</td>
-            <td class="px-4 py-2">{{ formatarData(enc.created_at) }}</td>
-            <td class="px-4 py-2">{{ enc.observacoes || '-' }}</td>
-            <td class="px-4 py-2">
-              <span class="text-yellow-700 font-semibold">{{ enc.status }}</span>
+        <tbody class="bg-secondary-800 divide-y divide-secondary-700">
+          <tr v-for="enc in encaminhamentos" :key="enc.id" class="hover:bg-secondary-700">
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-secondary-100">{{ enc.triagem?.paciente?.nome || '-' }}</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-secondary-300">{{ enc.hospital?.nome || '-' }}</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-secondary-300">{{ formatarData(enc.created_at) }}</td>
+            <td class="px-4 py-3 whitespace-nowrap">
+              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-800 text-yellow-100">{{ enc.status }}</span>
             </td>
-            <td class="px-4 py-2">
-              <button @click="abrirDetalhes(enc.id)" class="text-blue-600 hover:underline mr-2">Ver Detalhes</button>
-              <button @click="abrirMapa(enc)" class="text-green-700 hover:underline mr-2">Ver Mapa</button>
-              <button @click="aceitarEncaminhamento(enc.id)" class="text-green-700 hover:underline mr-2">Aceitar</button>
-              <button @click="abrirModalAmbulancia(enc.id)" class="text-indigo-700 hover:underline mr-2">Designar Ambulância</button>
-              <button @click="concluirEncaminhamento(enc.id)" class="text-gray-700 hover:underline">Concluir</button>
+            <td class="px-4 py-3 whitespace-nowrap text-sm font-medium space-x-2">
+              <button @click="abrirDetalhes(enc.id)" class="btn-icon-link" title="Detalhes"><svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg></button>
+              <button @click="abrirMapa(enc)" class="btn-icon-link" title="Ver Mapa"><svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m0 0v2.25m0-2.25h1.5m-1.5 0H8.25m7.5 0v2.25m0-2.25h-1.5m1.5 0h.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></button>
+              <button @click="abrirModalAmbulancia(enc.id)" class="btn-icon-link text-accent-500" title="Designar Ambulância"><svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.125-.504 1.125-1.125V14.25m-17.25 4.5v-1.875a3.375 3.375 0 013.375-3.375h1.5a1.125 1.125 0 011.125 1.125v-1.5a3.375 3.375 0 013.375-3.375H15M12 14.25h.008v.008H12v-.008z" /></svg></button>
             </td>
           </tr>
           <tr v-if="!loading && encaminhamentos.length === 0">
-            <td colspan="6" class="text-center text-gray-500 py-4">Nenhum pedido pendente encontrado.</td>
+            <td colspan="6" class="text-center text-secondary-500 py-4">Nenhum pedido pendente encontrado.</td>
           </tr>
         </tbody>
       </table>
     </div>
 
     <!-- Modal Detalhes -->
-    <div v-if="showDetalhes" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl relative">
-        <h2 class="text-xl font-bold mb-4">Detalhes do Encaminhamento</h2>
-        <div v-if="detalhes && detalhes.id">
-          <div class="mb-2"><b>ID:</b> {{ detalhes.id || '-' }}</div>
-          <div class="mb-2">
-            <b>Status:</b>
-            <select v-model="novoStatus" class="input-field w-auto" @change="alterarStatusEncaminhamento(detalhes)">
-              <option value="pendente">Pendente</option>
-              <option value="em_andamento">Em Andamento</option>
-              <option value="concluido">Concluído</option>
-            </select>
-          </div>
-          <div class="mb-2"><b>Data:</b> {{ detalhes.created_at ? formatarData(detalhes.created_at) : '-' }}</div>
-          <div class="mb-2"><b>Observações:</b> {{ detalhes.observacoes || '-' }}</div>
-          <div class="mb-2"><b>Hospital:</b> {{ detalhes.hospital?.nome || detalhes.hospital_nome || detalhes.hospital_id || 'Não informado' }}</div>
-          <div class="mb-2"><b>Paciente:</b> {{ detalhes.triagem?.paciente?.nome || detalhes.paciente?.nome || detalhes.paciente_nome || 'Não informado' }}</div>
-          <div class="mb-2"><b>BI Paciente:</b> {{ detalhes.triagem?.paciente?.bi_numero || detalhes.paciente?.bi_numero || detalhes.paciente_bi || 'Não informado' }}</div>
-          <div class="mb-2"><b>Telefone Paciente:</b> {{ detalhes.triagem?.paciente?.telefone || detalhes.paciente?.telefone || detalhes.paciente_telefone || 'Não informado' }}</div>
-          <div class="mb-2"><b>Nível de Risco:</b> {{ detalhes.triagem?.nivel_risco || detalhes.nivel_risco || 'Não informado' }}</div>
-          <div class="mb-2"><b>Data da Triagem:</b> {{ detalhes.triagem?.created_at ? formatarData(detalhes.triagem.created_at) : (detalhes.triagem_created_at ? formatarData(detalhes.triagem_created_at) : '-') }}</div>
+    <div v-if="showDetalhes" class="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-75 flex items-center justify-center">
+      <div class="card p-0 transform transition-all sm:my-8 sm:max-w-xl sm:w-full max-h-[90vh] flex flex-col">
+        <div class="flex items-center justify-between p-4 border-b border-secondary-700 flex-shrink-0">
+          <h3 class="text-lg font-medium text-secondary-100">Detalhes do Encaminhamento</h3>
+          <button @click="fecharDetalhes" class="btn-icon-secondary">
+             <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
         </div>
-        <div v-else-if="detalhes && !detalhes.id" class="text-gray-500">Encaminhamento não encontrado ou sem dados completos.</div>
-        <div v-else class="text-gray-500">Carregando detalhes...</div>
-        <button @click="fecharDetalhes" class="absolute top-2 right-2 text-gray-400 hover:text-gray-700">&times;</button>
+        <div class="p-6 overflow-y-auto">
+           <div v-if="detalhes && detalhes.id" class="space-y-2 text-sm">
+            <div class="grid grid-cols-2 gap-x-4 gap-y-2">
+              <div><p class="label">Paciente:</p><p class="text-secondary-200">{{ detalhes.triagem?.paciente?.nome }}</p></div>
+              <div><p class="label">BI:</p><p class="text-secondary-200">{{ detalhes.triagem?.paciente?.bi_numero }}</p></div>
+              <div><p class="label">Hospital:</p><p class="text-secondary-200">{{ detalhes.hospital?.nome }}</p></div>
+              <div><p class="label">Data Pedido:</p><p class="text-secondary-200">{{ formatarData(detalhes.created_at) }}</p></div>
+              <div class="col-span-2"><p class="label">Observações:</p><p class="text-secondary-200">{{ detalhes.observacoes || 'Nenhuma.' }}</p></div>
+            </div>
+            <div class="mt-4 border-t border-secondary-700 pt-4">
+              <label class="label">Alterar Status</label>
+              <div class="flex items-center gap-2">
+                <select v-model="novoStatus" class="input-field">
+                  <option value="pendente">Pendente</option>
+                  <option value="em_transito">Em Trânsito</option>
+                  <option value="concluido">Concluído</option>
+                  <option value="cancelado">Cancelado</option>
+                </select>
+                <button @click="alterarStatusEncaminhamento(detalhes)" class="btn-primary" :disabled="novoStatus === detalhes.status">Salvar</button>
+              </div>
+            </div>
+          </div>
+          <div v-else class="text-secondary-400">Carregando detalhes...</div>
+        </div>
+        <div class="bg-secondary-700/50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse flex-shrink-0">
+          <button type="button" @click="fecharDetalhes" class="btn-secondary">Fechar</button>
+        </div>
       </div>
     </div>
-
+    
     <!-- Modal Designar Ambulância -->
-    <div v-if="showModalAmbulancia" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
-        <h2 class="text-xl font-bold mb-4">Designar Ambulância</h2>
-        <form @submit.prevent="designarAmbulancia">
-          <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Selecione a ambulância</label>
-            <select v-model="ambulanciaSelecionada" class="input-field" required>
-              <option value="" disabled>Selecione...</option>
-              <option v-for="amb in ambulanciasDisponiveis" :key="amb.id" :value="amb.id">
-                {{ amb.placa }} - {{ amb.modelo }}
-              </option>
-            </select>
+    <div v-if="showModalAmbulancia" class="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-75 flex items-center justify-center">
+        <div class="card p-0 transform transition-all sm:my-8 sm:max-w-md sm:w-full max-h-[90vh] flex flex-col">
+          <div class="flex items-center justify-between p-4 border-b border-secondary-700">
+              <h3 class="text-lg font-medium text-secondary-100">Designar Ambulância</h3>
+              <button @click="fecharModalAmbulancia" class="btn-icon-secondary">
+                  <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
           </div>
-          <div class="flex justify-end gap-2 mt-4">
-            <button type="button" @click="fecharModalAmbulancia" class="btn-secondary">Cancelar</button>
-            <button type="submit" class="btn-primary">Designar</button>
-          </div>
-        </form>
-        <button @click="fecharModalAmbulancia" class="absolute top-2 right-2 text-gray-400 hover:text-gray-700">&times;</button>
+          <form @submit.prevent="designarAmbulancia">
+            <div class="p-6">
+                <label class="label">Selecione a ambulância</label>
+                <select v-model="ambulanciaSelecionada" class="input-field" required>
+                    <option value="" disabled>Selecione uma ambulância disponível...</option>
+                    <option v-for="amb in ambulanciasDisponiveis" :key="amb.id" :value="amb.id">
+                        {{ amb.placa }} - {{ amb.modelo }}
+                    </option>
+                </select>
+            </div>
+            <div class="bg-secondary-700/50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+              <button type="submit" class="btn-primary">Designar</button>
+              <button type="button" @click="fecharModalAmbulancia" class="btn-secondary mr-3">Cancelar</button>
+            </div>
+          </form>
       </div>
     </div>
-
+    
     <!-- Modal Mapa -->
-    <div v-if="showMapa" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl relative">
-        <h2 class="text-xl font-bold mb-4">Localização no Mapa</h2>
-        <div class="flex items-center gap-6 mb-2">
-          <div class="flex items-center gap-2">
-            <span class="inline-block w-4 h-4 rounded-full bg-blue-600"></span>
-            <span>Paciente</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <img src="https://cdn-icons-png.flaticon.com/512/2967/2967350.png" alt="Ambulância" class="w-5 h-5" />
-            <span>Ambulância</span>
+    <div v-if="showMapa" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
+      <div class="card p-0 transform transition-all sm:my-8 sm:max-w-4xl sm:w-full">
+        <div class="flex items-center justify-between p-4 border-b border-secondary-700">
+          <h3 class="text-lg font-medium text-secondary-100">Localização no Mapa</h3>
+          <button @click="fecharMapa" class="btn-icon-secondary">
+             <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+        <div class="p-6">
+          <div style="height: 500px; width: 100%" class="rounded-md overflow-hidden">
+            <l-map v-if="mapCenter" :zoom="14" :center="mapCenter" style="height: 100%; width: 100%; background-color: #374151;">
+              <l-tile-layer :url="tileUrl" :attribution="tileAttribution" />
+              <l-marker v-if="pacienteMarker" :lat-lng="pacienteMarker">
+                <l-popup>Paciente</l-popup>
+              </l-marker>
+              <l-marker v-if="ambulanciaMarker" :lat-lng="ambulanciaMarker" :icon="ambulanciaIcon">
+                <l-popup>Ambulância</l-popup>
+              </l-marker>
+            </l-map>
           </div>
         </div>
-        <div style="height: 400px; width: 100%">
-          <l-map v-if="mapCenter" :zoom="14" :center="mapCenter" style="height: 100%; width: 100%">
-            <l-tile-layer :url="tileUrl" :attribution="tileAttribution" />
-            <l-marker v-if="pacienteMarker" :lat-lng="pacienteMarker">
-              <l-popup>Paciente</l-popup>
-            </l-marker>
-            <l-marker v-if="ambulanciaMarker" :lat-lng="ambulanciaMarker" :icon="ambulanciaIcon">
-              <l-popup>Ambulância</l-popup>
-            </l-marker>
-          </l-map>
-        </div>
-        <button @click="fecharMapa" class="absolute top-2 right-2 text-gray-400 hover:text-gray-700">&times;</button>
       </div>
     </div>
   </div>
@@ -165,8 +179,6 @@ const fetchEncaminhamentos = async () => {
     const response = await axios.get('http://127.0.0.1:8000/api/encaminhamentos?status=pendente', {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
       }
     })
     encaminhamentos.value = (response.data.data || response.data).map(e => ({
@@ -187,11 +199,7 @@ async function abrirDetalhes(id) {
   const token = localStorage.getItem('token')
   try {
     const response = await axios.get(`http://127.0.0.1:8000/api/encaminhamentos/${id}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
+      headers: { 'Authorization': `Bearer ${token}` }
     })
     detalhes.value = response.data
     novoStatus.value = response.data.status || 'pendente'
@@ -206,43 +214,25 @@ function fecharDetalhes() {
   detalhes.value = null
 }
 
-async function aceitarEncaminhamento(id) {
+async function alterarStatusEncaminhamento(enc) {
+  if (!enc?.id || !novoStatus.value) return
   try {
     const token = localStorage.getItem('token')
-    await axios.put(`http://127.0.0.1:8000/api/encaminhamentos/${id}`, { status: 'em_transito' }, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    })
+    await axios.put(`http://127.0.0.1:8000/api/encaminhamentos/${enc.id}`, {
+      status: novoStatus.value,
+    }, { headers: { 'Authorization': `Bearer ${token}` }})
     await fetchEncaminhamentos()
+    if (detalhes.value) detalhes.value.status = novoStatus.value
   } catch (e) {
-    erro.value = 'Erro ao aceitar encaminhamento.'
-  }
-}
-
-async function concluirEncaminhamento(id) {
-  try {
-    const token = localStorage.getItem('token')
-    await axios.put(`http://127.0.0.1:8000/api/encaminhamentos/${id}`, { status: 'concluido' }, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    })
-    await fetchEncaminhamentos()
-  } catch (e) {
-    erro.value = 'Erro ao concluir encaminhamento.'
+    erro.value = 'Erro ao alterar status do encaminhamento.'
   }
 }
 
 async function abrirModalAmbulancia(id) {
   encaminhamentoIdParaAmbulancia = id
   ambulanciaSelecionada.value = ''
-  showModalAmbulancia.value = true
   await fetchAmbulanciasDisponiveis()
+  showModalAmbulancia.value = true
 }
 
 function fecharModalAmbulancia() {
@@ -255,15 +245,10 @@ async function fetchAmbulanciasDisponiveis() {
   try {
     const token = localStorage.getItem('token')
     const response = await axios.get('http://127.0.0.1:8000/api/ambulancias?status=disponivel', {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
+       headers: { 'Authorization': `Bearer ${token}` }
     })
     ambulanciasDisponiveis.value = response.data.data || response.data
   } catch (e) {
-    ambulanciasDisponiveis.value = []
     erro.value = 'Erro ao buscar ambulâncias disponíveis.'
   }
 }
@@ -272,34 +257,29 @@ async function designarAmbulancia() {
   if (!ambulanciaSelecionada.value || !encaminhamentoIdParaAmbulancia) return
   try {
     const token = localStorage.getItem('token')
-    await axios.put(`http://127.0.0.1:8000/api/encaminhamentos/${encaminhamentoIdParaAmbulancia}`, { ambulancia_id: ambulanciaSelecionada.value }, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    })
+    await axios.post(`http://127.0.0.1:8000/api/encaminhamentos/${encaminhamentoIdParaAmbulancia}/designar-ambulancia`, 
+      { ambulancia_id: ambulanciaSelecionada.value }, 
+      { headers: { 'Authorization': `Bearer ${token}` }}
+    )
     showModalAmbulancia.value = false
     await fetchEncaminhamentos()
   } catch (e) {
-    erro.value = 'Erro ao designar ambulância.'
+    erro.value = e.response?.data?.message || 'Erro ao designar ambulância.'
   }
 }
 
 function abrirMapa(enc) {
-  // Pega localização do paciente
   const paciente = enc.triagem?.paciente
   if (paciente?.latitude && paciente?.longitude) {
     pacienteMarker.value = [parseFloat(paciente.latitude), parseFloat(paciente.longitude)]
     mapCenter.value = pacienteMarker.value
   } else {
     pacienteMarker.value = null
-    mapCenter.value = null
+    mapCenter.value = [-8.8368, 13.2343] // Centro de Luanda como fallback
   }
-  // Pega localização da ambulância (se houver)
-  if (enc.ambulancia && enc.ambulancia.latitude && enc.ambulancia.longitude) {
-    ambulanciaMarker.value = [parseFloat(enc.ambulancia.latitude), parseFloat(enc.ambulancia.longitude)]
-    // Centraliza entre os dois pontos se ambos existirem
+
+  if (enc.ambulancia_designada?.latitude && enc.ambulancia_designada?.longitude) {
+    ambulanciaMarker.value = [parseFloat(enc.ambulancia_designada.latitude), parseFloat(enc.ambulancia_designada.longitude)]
     if (pacienteMarker.value) {
       mapCenter.value = [
         (pacienteMarker.value[0] + ambulanciaMarker.value[0]) / 2,
@@ -317,29 +297,6 @@ function fecharMapa() {
   pacienteMarker.value = null
   ambulanciaMarker.value = null
   mapCenter.value = null
-}
-
-async function alterarStatusEncaminhamento(enc) {
-  if (!enc?.id || !novoStatus.value) return
-  try {
-    const token = localStorage.getItem('token')
-    await axios.put(`http://127.0.0.1:8000/api/encaminhamentos/${enc.id}`, {
-      triagem_id: enc.triagem_id || enc.triagem?.id,
-      hospital_id: enc.hospital_id || enc.hospital?.id,
-      status: novoStatus.value,
-      observacoes: enc.observacoes || ''
-    }, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    })
-    await fetchEncaminhamentos()
-    if (detalhes.value) detalhes.value.status = novoStatus.value
-  } catch (e) {
-    erro.value = 'Erro ao alterar status do encaminhamento.'
-  }
 }
 
 onMounted(fetchEncaminhamentos)

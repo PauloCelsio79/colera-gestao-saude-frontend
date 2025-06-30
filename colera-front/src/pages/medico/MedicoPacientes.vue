@@ -1,48 +1,45 @@
 <template>
   <PainelPrevencaoColera />
-  <div class="bg-white shadow rounded-lg">
+  <div class="card">
     <!-- Header -->
-    <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
+    <div class="px-4 py-5 border-b border-secondary-700 sm:px-6">
       <div class="flex justify-between items-center">
-        <h3 class="text-lg leading-6 font-medium text-gray-900">
+        <h3 class="text-lg leading-6 font-medium text-secondary-100">
           Gerenciamento de Pacientes
         </h3>
-        <button
-          @click="openNewPacienteModal"
-          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-        >
+        <button @click="openNewPacienteModal" class="btn-primary">
           Novo Paciente
         </button>
       </div>
     </div>
 
     <!-- Gráfico de Risco dos Pacientes -->
-    <div v-if="!loading && !error" class="p-4 flex flex-col items-center justify-center">
-      <h4 class="text-base font-semibold mb-2">Distribuição de Pacientes por Nível de Risco</h4>
+    <div v-if="!loading && !error" class="p-4 flex flex-col items-center justify-center border-b border-secondary-700">
+      <h4 class="text-base font-semibold mb-2 text-secondary-200">Distribuição de Pacientes por Nível de Risco</h4>
       <div class="w-[180px] h-[180px] flex items-center justify-center">
         <canvas id="graficoRiscoPacientes" width="180" height="180"></canvas>
       </div>
     </div>
 
     <!-- Filtros -->
-    <div v-if="!loading && !error" class="px-4 py-3 bg-gray-50 flex flex-col sm:flex-row sm:items-end sm:space-x-4 space-y-2 sm:space-y-0">
+    <div v-if="!loading && !error" class="px-4 py-4 bg-secondary-700/50 flex flex-col sm:flex-row sm:items-end sm:space-x-4 space-y-2 sm:space-y-0">
       <div>
-        <label class="block text-xs font-medium text-gray-700 mb-1">Nome</label>
+        <label class="block text-xs font-medium text-secondary-300 mb-1">Nome</label>
         <input v-model="filtros.nome" type="text" class="input-field" placeholder="Nome do paciente">
       </div>
       <div>
-        <label class="block text-xs font-medium text-gray-700 mb-1">BI</label>
+        <label class="block text-xs font-medium text-secondary-300 mb-1">BI</label>
         <input v-model="filtros.bi" type="text" class="input-field" placeholder="BI do paciente">
       </div>
     </div>
 
     <!-- Loading State -->
     <div v-if="loading" class="flex justify-center items-center p-8">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="p-4 bg-red-50 border-l-4 border-red-400">
+    <div v-else-if="error" class="p-4 bg-red-900/50 border-l-4 border-red-700">
       <div class="flex">
         <div class="flex-shrink-0">
           <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -50,58 +47,52 @@
           </svg>
         </div>
         <div class="ml-3">
-          <p class="text-sm text-red-700">{{ error }}</p>
+          <p class="text-sm text-red-200">{{ error }}</p>
         </div>
       </div>
     </div>
 
     <!-- Table -->
     <div v-else class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+      <table class="min-w-full divide-y divide-secondary-700">
+        <thead class="bg-secondary-700">
           <tr>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">
               Nome
             </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">
               BI
             </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">
               Telefone
             </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">
               Data de Nascimento
             </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-secondary-300 uppercase tracking-wider">
               Ações
             </th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="paciente in pacientesFiltrados" :key="paciente.id">
+        <tbody class="bg-secondary-800 divide-y divide-secondary-700">
+          <tr v-for="paciente in pacientesFiltrados" :key="paciente.id" class="hover:bg-secondary-700">
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm font-medium text-gray-900">{{ paciente.nome }}</div>
+              <div class="text-sm font-medium text-secondary-100">{{ paciente.nome }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-500">{{ paciente.bi_numero }}</div>
+              <div class="text-sm text-secondary-400">{{ paciente.bi_numero }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-500">{{ paciente.telefone }}</div>
+              <div class="text-sm text-secondary-400">{{ paciente.telefone }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-500">{{ formatDate(paciente.data_nascimento) }}</div>
+              <div class="text-sm text-secondary-400">{{ formatDate(paciente.data_nascimento) }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-              <button
-                @click="editPaciente(paciente)"
-                class="text-primary-600 hover:text-primary-900 mr-4"
-              >
+              <button @click="editPaciente(paciente)" class="btn-link mr-4">
                 Editar
               </button>
-              <button
-                @click="viewTriagens(paciente)"
-                class="text-primary-600 hover:text-primary-900"
-              >
+              <button @click="viewTriagens(paciente)" class="btn-link">
                 Ver Triagens
               </button>
             </td>
@@ -111,72 +102,56 @@
     </div>
 
     <!-- Modal -->
-    <div v-if="showModal" class="fixed inset-0 z-50 overflow-y-auto">
+    <div v-if="showModal" class="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-75">
       <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 transition-opacity" aria-hidden="true">
-          <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
-        </div>
-
-        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-          <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">
+        <div class="inline-block align-bottom bg-secondary-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+          <div class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 border-b border-secondary-700">
+            <h3 class="text-lg font-medium text-secondary-100 mb-4">
               {{ editingPaciente ? 'Editar Paciente' : 'Novo Paciente' }}
             </h3>
-            <form @submit.prevent="handleSubmit">
-              <div class="space-y-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">Nome</label>
-                  <input v-model="form.nome" type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" required />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">Número do BI</label>
-                  <input v-model="form.bi_numero" type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" required />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">Telefone</label>
-                  <input v-model="form.telefone" type="tel" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" required />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">Data de Nascimento</label>
-                  <input v-model="form.data_nascimento" type="date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" required />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">Endereço</label>
-                  <input v-model="form.endereco" type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" required />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">Gênero</label>
-                  <select v-model="form.genero" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" required>
-                    <option value="M">Masculino</option>
-                    <option value="F">Feminino</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">Latitude</label>
-                  <input v-model="form.latitude" type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" required />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">Longitude</label>
-                  <input v-model="form.longitude" type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" required />
-                </div>
+            <form @submit.prevent="handleSubmit" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-secondary-300">Nome</label>
+                <input v-model="form.nome" type="text" class="input-field mt-1" required />
+              </div>
+              <div class="sm:col-span-1">
+                <label class="block text-sm font-medium text-secondary-300">Número do BI</label>
+                <input v-model="form.bi_numero" type="text" class="input-field mt-1" required />
+              </div>
+              <div class="sm:col-span-1">
+                <label class="block text-sm font-medium text-secondary-300">Telefone</label>
+                <input v-model="form.telefone" type="tel" class="input-field mt-1" required />
+              </div>
+              <div class="sm:col-span-1">
+                <label class="block text-sm font-medium text-secondary-300">Data de Nascimento</label>
+                <input v-model="form.data_nascimento" type="date" class="input-field mt-1" required />
+              </div>
+               <div class="sm:col-span-1">
+                <label class="block text-sm font-medium text-secondary-300">Gênero</label>
+                <select v-model="form.genero" class="input-field mt-1" required>
+                  <option value="M">Masculino</option>
+                  <option value="F">Feminino</option>
+                </select>
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-secondary-300">Endereço</label>
+                <input v-model="form.endereco" type="text" class="input-field mt-1" required />
+              </div>
+              <div class="sm:col-span-1">
+                <label class="block text-sm font-medium text-secondary-300">Latitude</label>
+                <input v-model="form.latitude" type="text" class="input-field mt-1" required />
+              </div>
+              <div class="sm:col-span-1">
+                <label class="block text-sm font-medium text-secondary-300">Longitude</label>
+                <input v-model="form.longitude" type="text" class="input-field mt-1" required />
               </div>
             </form>
           </div>
-          <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-            <button
-              type="button"
-              @click="handleSubmit"
-              class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm"
-            >
+          <div class="bg-secondary-800 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-secondary-700">
+            <button type="button" @click="handleSubmit" class="btn-primary sm:ml-3">
               Salvar
             </button>
-            <button
-              type="button"
-              @click="closeModal"
-              class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-            >
+            <button type="button" @click="closeModal" class="btn-secondary mt-3 sm:mt-0">
               Cancelar
             </button>
           </div>
@@ -237,26 +212,40 @@ const renderizarGrafico = () => {
   const ctx = document.getElementById('graficoRiscoPacientes')
   if (!ctx) return
   if (graficoRisco) graficoRisco.destroy()
+
+  Chart.defaults.color = '#9ca3af';
+
   graficoRisco = new Chart(ctx, {
     type: 'pie',
     data: {
       labels: ['Alto Risco', 'Médio Risco', 'Baixo Risco'],
       datasets: [{
         data: [contagemRiscos.value.alto, contagemRiscos.value.medio, contagemRiscos.value.baixo],
-        backgroundColor: ['#ef4444', '#f59e42', '#22c55e'],
+        backgroundColor: ['#ef4444', '#f97316', '#22c55e'],
+        borderColor: '#374151',
+        borderWidth: 2
       }]
     },
     options: {
+      responsive: true,
+      maintainAspectRatio: false,
       plugins: {
-        legend: { display: true, position: 'bottom' }
+        legend: {
+          position: 'bottom',
+          labels: {
+            color: '#d1d5db',
+            padding: 15,
+            font: {
+              size: 12
+            }
+          }
+        }
       }
     }
   })
 }
 
-watch(contagemRiscos, () => {
-  renderizarGrafico()
-})
+watch(pacientesFiltrados, renderizarGrafico)
 
 const fetchPacientes = async () => {
   loading.value = true

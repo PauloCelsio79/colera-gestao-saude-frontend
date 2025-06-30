@@ -58,6 +58,10 @@ const router = createRouter({
         {
           path: 'logs',
           component: AdminLogs
+        },
+        {
+          path: 'pacientes',
+          component: MedicoPacientes
         }
       ]
     },

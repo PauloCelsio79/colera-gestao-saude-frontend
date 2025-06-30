@@ -33,7 +33,7 @@
             <td class="px-4 py-3 whitespace-nowrap text-sm font-medium space-x-2">
               <button @click="abrirDetalhes(enc.id)" class="btn-icon-link" title="Detalhes"><svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg></button>
               <button @click="abrirMapa(enc)" class="btn-icon-link" title="Ver Mapa"><svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m0 0v2.25m0-2.25h1.5m-1.5 0H8.25m7.5 0v2.25m0-2.25h-1.5m1.5 0h.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></button>
-              <button @click="abrirModalAmbulancia(enc.id)" class="btn-icon-link text-accent-500" title="Designar Ambulância"><svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.125-.504 1.125-1.125V14.25m-17.25 4.5v-1.875a3.375 3.375 0 013.375-3.375h1.5a1.125 1.125 0 011.125 1.125v-1.5a3.375 3.375 0 013.375-3.375H15M12 14.25h.008v.008H12v-.008z" /></svg></button>
+              <button @click="abrirModalAmbulancia(enc)" class="btn-icon-link text-accent-500" title="Designar Ambulância"><svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.125-.504 1.125-1.125V14.25m-17.25 4.5v-1.875a3.375 3.375 0 013.375-3.375h1.5a1.125 1.125 0 011.125 1.125v-1.5a3.375 3.375 0 013.375-3.375H15M12 14.25h.008v.008H12v-.008z" /></svg></button>
             </td>
           </tr>
           <tr v-if="!loading && encaminhamentos.length === 0">
@@ -125,8 +125,8 @@
               <l-marker v-if="pacienteMarker" :lat-lng="pacienteMarker">
                 <l-popup>Paciente</l-popup>
               </l-marker>
-              <l-marker v-if="ambulanciaMarker" :lat-lng="ambulanciaMarker" :icon="ambulanciaIcon">
-                <l-popup>Ambulância</l-popup>
+              <l-marker v-if="hospitalMarker" :lat-lng="hospitalMarker">
+                <l-popup>Hospital</l-popup>
               </l-marker>
             </l-map>
           </div>
@@ -137,166 +137,196 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
-import { LMap, LTileLayer, LMarker, LPopup } from '@vue-leaflet/vue-leaflet'
+import { ref, onMounted, computed } from 'vue'
+import api from '@/api'
+import { LMap, LTileLayer, LMarker, LPopup, LIcon } from '@vue-leaflet/vue-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 
 const encaminhamentos = ref([])
 const erro = ref('')
 const loading = ref(false)
+
 const showDetalhes = ref(false)
 const detalhes = ref(null)
+const novoStatus = ref('')
+
 const showModalAmbulancia = ref(false)
 const ambulanciasDisponiveis = ref([])
 const ambulanciaSelecionada = ref('')
-let encaminhamentoIdParaAmbulancia = null
+const encaminhamentoParaDesignar = ref(null)
+const processandoDesignacao = ref(false)
+
 const showMapa = ref(false)
 const pacienteMarker = ref(null)
-const ambulanciaMarker = ref(null)
+const hospitalMarker = ref(null)
 const mapCenter = ref(null)
-const ambulanciaIcon = L.icon({
-  iconUrl: 'https://cdn-icons-png.flaticon.com/512/2967/2967350.png',
-  iconSize: [32, 32],
-  iconAnchor: [16, 32],
-  popupAnchor: [0, -32]
-})
+
 const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-const tileAttribution = '© OpenStreetMap contributors'
-const novoStatus = ref('')
+const tileAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 
 function formatarData(data) {
-  if (!data) return '-'
-  return new Date(data).toLocaleString('pt-AO')
+    if (!data) return '-'
+    return new Date(data).toLocaleString('pt-AO')
+}
+
+// Haversine formula para calcular distância
+function haversineDistance(coords1, coords2) {
+    function toRad(x) {
+        return x * Math.PI / 180;
+    }
+
+    const lat1 = coords1.latitude;
+    const lon1 = coords1.longitude;
+    const lat2 = coords2.latitude;
+    const lon2 = coords2.longitude;
+
+    const R = 6371; // km
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
 }
 
 const fetchEncaminhamentos = async () => {
-  erro.value = ''
-  loading.value = true
-  try {
-    const token = localStorage.getItem('token')
-    const response = await axios.get('http://127.0.0.1:8000/api/encaminhamentos?status=pendente', {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      }
-    })
-    encaminhamentos.value = (response.data.data || response.data).map(e => ({
-      ...e,
-      triagem: e.triagem || {},
-      hospital: e.hospital || {}
-    }))
-  } catch (e) {
-    erro.value = 'Erro ao buscar pedidos de encaminhamento.'
-  } finally {
-    loading.value = false
-  }
+    erro.value = ''
+    loading.value = true
+    try {
+        const response = await api.get('/encaminhamentos?status=pendente')
+        encaminhamentos.value = (response.data.data || response.data)
+    } catch (e) {
+        console.error(e)
+        erro.value = 'Erro ao buscar pedidos de encaminhamento.'
+    } finally {
+        loading.value = false
+    }
 }
 
 async function abrirDetalhes(id) {
-  showDetalhes.value = true
-  detalhes.value = null
-  const token = localStorage.getItem('token')
-  try {
-    const response = await axios.get(`http://127.0.0.1:8000/api/encaminhamentos/${id}`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-    detalhes.value = response.data
-    novoStatus.value = response.data.status || 'pendente'
-  } catch (e) {
+    showDetalhes.value = true
     detalhes.value = null
-    erro.value = 'Erro ao buscar detalhes do encaminhamento.'
-  }
+    try {
+        const response = await api.get(`/encaminhamentos/${id}`)
+        detalhes.value = response.data.data || response.data
+        novoStatus.value = detalhes.value.status || 'pendente'
+    } catch (e) {
+        detalhes.value = null
+        erro.value = 'Erro ao buscar detalhes do encaminhamento.'
+    }
 }
 
 function fecharDetalhes() {
-  showDetalhes.value = false
-  detalhes.value = null
+    showDetalhes.value = false
+    detalhes.value = null
 }
 
 async function alterarStatusEncaminhamento(enc) {
-  if (!enc?.id || !novoStatus.value) return
-  try {
-    const token = localStorage.getItem('token')
-    await axios.put(`http://127.0.0.1:8000/api/encaminhamentos/${enc.id}`, {
-      status: novoStatus.value,
-    }, { headers: { 'Authorization': `Bearer ${token}` }})
-    await fetchEncaminhamentos()
-    if (detalhes.value) detalhes.value.status = novoStatus.value
-  } catch (e) {
-    erro.value = 'Erro ao alterar status do encaminhamento.'
-  }
+    if (!enc?.id || !novoStatus.value) return
+    try {
+        await api.put(`/encaminhamentos/${enc.id}`, { status: novoStatus.value })
+        await fetchEncaminhamentos()
+        if (detalhes.value) detalhes.value.status = novoStatus.value
+        fecharDetalhes();
+    } catch (e) {
+        console.error(e)
+        erro.value = 'Erro ao alterar status do encaminhamento.'
+    }
 }
 
-async function abrirModalAmbulancia(id) {
-  encaminhamentoIdParaAmbulancia = id
-  ambulanciaSelecionada.value = ''
-  await fetchAmbulanciasDisponiveis()
-  showModalAmbulancia.value = true
+async function abrirModalAmbulancia(encaminhamento) {
+    encaminhamentoParaDesignar.value = encaminhamento
+    ambulanciaSelecionada.value = ''
+    showModalAmbulancia.value = true
+    
+    try {
+        const res = await api.get('/ambulancias?status=disponivel')
+        const ambulancias = res.data.data || res.data
+        
+        const pacienteCoords = encaminhamento.triagem.paciente
+        
+        if (!pacienteCoords || !pacienteCoords.latitude || !pacienteCoords.longitude) {
+            ambulanciasDisponiveis.value = ambulancias;
+            return;
+        }
+
+        const ambulanciasComDistancia = ambulancias.map(amb => ({
+            ...amb,
+            distancia: haversineDistance(pacienteCoords, amb)
+        })).sort((a, b) => a.distancia - b.distancia)
+        
+        ambulanciasDisponiveis.value = ambulanciasComDistancia
+        
+        if (ambulanciasComDistancia.length > 0) {
+            ambulanciaSelecionada.value = ambulanciasComDistancia[0].id
+        }
+
+    } catch (e) {
+        console.error(e)
+        erro.value = "Erro ao carregar ambulâncias."
+    }
 }
 
 function fecharModalAmbulancia() {
-  showModalAmbulancia.value = false
-  ambulanciaSelecionada.value = ''
-  encaminhamentoIdParaAmbulancia = null
-}
-
-async function fetchAmbulanciasDisponiveis() {
-  try {
-    const token = localStorage.getItem('token')
-    const response = await axios.get('http://127.0.0.1:8000/api/ambulancias?status=disponivel', {
-       headers: { 'Authorization': `Bearer ${token}` }
-    })
-    ambulanciasDisponiveis.value = response.data.data || response.data
-  } catch (e) {
-    erro.value = 'Erro ao buscar ambulâncias disponíveis.'
-  }
+    showModalAmbulancia.value = false
+    ambulanciaSelecionada.value = ''
+    encaminhamentoParaDesignar.value = null
 }
 
 async function designarAmbulancia() {
-  if (!ambulanciaSelecionada.value || !encaminhamentoIdParaAmbulancia) return
-  try {
-    const token = localStorage.getItem('token')
-    await axios.post(`http://127.0.0.1:8000/api/encaminhamentos/${encaminhamentoIdParaAmbulancia}/designar-ambulancia`, 
-      { ambulancia_id: ambulanciaSelecionada.value }, 
-      { headers: { 'Authorization': `Bearer ${token}` }}
-    )
-    showModalAmbulancia.value = false
-    await fetchEncaminhamentos()
-  } catch (e) {
-    erro.value = e.response?.data?.message || 'Erro ao designar ambulância.'
-  }
+    if (!ambulanciaSelecionada.value || !encaminhamentoParaDesignar.value) return
+    processandoDesignacao.value = true
+    erro.value = ''
+
+    try {
+        const now = new Date().toISOString();
+        const payload = { status: 'concluido', data_chegada: now }
+        console.log('Enviando para encaminhamento:', payload)
+        await api.put(`/encaminhamentos/${encaminhamentoParaDesignar.value.id}`, payload)
+
+        await api.put(`/ambulancias/${ambulanciaSelecionada.value}`, {
+            status: 'em_deslocamento'
+        })
+        
+        fecharModalAmbulancia()
+        await fetchEncaminhamentos()
+
+    } catch (e) {
+        console.error('Erro detalhado:', e)
+        if (e.response) {
+            console.error('Resposta da API:', e.response.data)
+            alert('Erro 422:\n' + JSON.stringify(e.response.data, null, 2))
+        }
+        erro.value = e.response?.data?.message || "Erro ao designar ambulância. A API pode não suportar associar uma ambulância diretamente. Verifique a documentação."
+    } finally {
+        processandoDesignacao.value = false
+    }
 }
 
 function abrirMapa(enc) {
-  const paciente = enc.triagem?.paciente
-  if (paciente?.latitude && paciente?.longitude) {
-    pacienteMarker.value = [parseFloat(paciente.latitude), parseFloat(paciente.longitude)]
-    mapCenter.value = pacienteMarker.value
-  } else {
-    pacienteMarker.value = null
-    mapCenter.value = [-8.8368, 13.2343] // Centro de Luanda como fallback
-  }
+    const paciente = enc.triagem?.paciente;
+    const hospital = enc.hospital;
 
-  if (enc.ambulancia_designada?.latitude && enc.ambulancia_designada?.longitude) {
-    ambulanciaMarker.value = [parseFloat(enc.ambulancia_designada.latitude), parseFloat(enc.ambulancia_designada.longitude)]
-    if (pacienteMarker.value) {
-      mapCenter.value = [
-        (pacienteMarker.value[0] + ambulanciaMarker.value[0]) / 2,
-        (pacienteMarker.value[1] + ambulanciaMarker.value[1]) / 2
-      ]
+    if (paciente && paciente.latitude && paciente.longitude) {
+        pacienteMarker.value = L.latLng(paciente.latitude, paciente.longitude)
+        mapCenter.value = pacienteMarker.value
     }
-  } else {
-    ambulanciaMarker.value = null
-  }
-  showMapa.value = true
+
+    if (hospital && hospital.latitude && hospital.longitude) {
+        hospitalMarker.value = L.latLng(hospital.latitude, hospital.longitude)
+        if(!mapCenter.value) mapCenter.value = hospitalMarker.value
+    }
+    
+    showMapa.value = true
 }
 
 function fecharMapa() {
-  showMapa.value = false
-  pacienteMarker.value = null
-  ambulanciaMarker.value = null
-  mapCenter.value = null
+    showMapa.value = false
+    pacienteMarker.value = null
+    hospitalMarker.value = null
+    mapCenter.value = null
 }
 
 onMounted(fetchEncaminhamentos)

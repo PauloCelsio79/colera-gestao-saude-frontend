@@ -197,7 +197,17 @@
             </div>
             <div>
               <label class="label">Nível de Risco *</label>
-              <input type="text" class="input-field-disabled" :value="form.nivel_risco ? (form.nivel_risco.charAt(0).toUpperCase() + form.nivel_risco.slice(1) + ' Risco') : 'Não calculado'" readonly />
+              <div
+                class="mt-1 p-2 rounded-md text-center font-semibold text-lg"
+                :class="{
+                  'bg-secondary-700 text-secondary-300': !form.nivel_risco,
+                  'bg-red-800 text-red-100': form.nivel_risco === 'alto',
+                  'bg-yellow-800 text-yellow-100': form.nivel_risco === 'medio',
+                  'bg-green-800 text-green-100': form.nivel_risco === 'baixo'
+                }"
+              >
+                {{ form.nivel_risco ? (form.nivel_risco.charAt(0).toUpperCase() + form.nivel_risco.slice(1)) : 'Não Calculado' }}
+              </div>
             </div>
             <div>
               <label class="label">Observações</label>
@@ -231,10 +241,58 @@
           </div>
 
           <!-- QR Code State -->
-          <div v-if="modalState === 'qr' && triagemAtual" class="p-6 flex flex-col items-center justify-center">
-            <h4 class="text-secondary-200 text-lg mb-2">Triagem ID: {{ triagemAtual.id }}</h4>
-            <p class="text-secondary-400 mb-4">Apresente este QR code para um encaminhamento rápido.</p>
-            <div ref="qrCodeContainer" class="bg-white p-4 rounded-lg"></div>
+          <div v-if="modalState === 'qr' && triagemAtual" class="flex flex-col items-center justify-center p-6 md:flex-row md:items-start md:gap-6">
+            <!-- QR Code on the left -->
+            <div class="flex flex-shrink-0 flex-col items-center">
+              <h4 class="mb-2 text-lg text-secondary-200">Triagem ID: {{ triagemAtual.id }}</h4>
+              <div ref="qrCodeContainer" class="rounded-lg bg-white p-4"></div>
+              <p class="mt-4 text-center text-sm text-secondary-400">Apresente este QR code para um<br />encaminhamento rápido.</p>
+            </div>
+
+            <!-- Patient and Triage Data on the right -->
+            <div class="mt-6 w-full md:mt-0">
+              <h4 class="mb-4 border-b border-secondary-700 pb-2 text-lg font-medium text-secondary-100">Resumo da Triagem</h4>
+              <div class="space-y-3 text-sm">
+                <!-- Patient data -->
+                <div>
+                  <p class="label">Paciente:</p>
+                  <p class="text-base text-secondary-200">{{ triagemAtual.paciente?.nome }}</p>
+                </div>
+                <div>
+                  <p class="label">BI:</p>
+                  <p class="text-secondary-200">{{ triagemAtual.paciente?.bi_numero }}</p>
+                </div>
+                <div>
+                  <p class="label">Data da Triagem:</p>
+                  <p class="text-secondary-200">{{ formatDate(triagemAtual.created_at) }} às {{ formatTime(triagemAtual.created_at) }}</p>
+                </div>
+
+                <!-- Triage result -->
+                <div class="border-t border-secondary-700 pt-3">
+                  <p class="label">Nível de Risco:</p>
+                  <p
+                    class="text-lg font-semibold"
+                    :class="{
+                      'text-red-500': triagemAtual.nivel_risco === 'alto',
+                      'text-yellow-500': triagemAtual.nivel_risco === 'medio',
+                      'text-green-500': triagemAtual.nivel_risco === 'baixo'
+                    }"
+                  >
+                    {{ triagemAtual.nivel_risco ? triagemAtual.nivel_risco.charAt(0).toUpperCase() + triagemAtual.nivel_risco.slice(1) : 'N/A' }}
+                  </p>
+                </div>
+                <div>
+                  <p class="label">Sintomas Apresentados:</p>
+                  <div class="mt-1 flex flex-wrap gap-2">
+                    <span v-if="triagemAtual.sintomas?.diarreia" class="badge-symptom bg-blue-800 text-blue-100">Diarreia</span>
+                    <span v-if="triagemAtual.sintomas?.vomito" class="badge-symptom bg-purple-800 text-purple-100">Vômito</span>
+                    <span v-if="triagemAtual.sintomas?.desidratacao" class="badge-symptom bg-orange-800 text-orange-100">Desidratação</span>
+                    <span v-if="triagemAtual.sintomas?.dor_abdominal" class="badge-symptom bg-pink-800 text-pink-100">Dor Abdominal</span>
+                    <span v-if="triagemAtual.sintomas?.fraqueza" class="badge-symptom bg-indigo-800 text-indigo-100">Fraqueza</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -301,10 +359,11 @@
 </style>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
-import QrcodeVue from 'qrcode.vue'
+import PainelPrevencaoColera from '@/components/PainelPrevencaoColera.vue'
+import QRCode from 'qrcode'
+import api from '@/api'
 
 const router = useRouter()
 const triagens = ref([])
@@ -313,8 +372,18 @@ const hospitais = ref([])
 const direcoesProvinciais = ref([])
 const direcoesMunicipais = ref([])
 const showModal = ref(false)
-const editingTriagem = ref({})
-const isCreatingEncaminhamento = ref(false)
+const modalState = ref('form') // 'form', 'details', 'qr'
+const triagemAtual = ref(null)
+const isEditing = ref(false)
+const qrCodeContainer = ref(null)
+
+const filtros = ref({
+  paciente: '',
+  bi: '',
+  risco: '',
+  data: ''
+})
+
 const form = ref({
   paciente_id: '',
   sintomas: {
@@ -325,677 +394,151 @@ const form = ref({
     fraqueza: false
   },
   nivel_risco: '',
-  observacoes: '',
-  triagem_id: '',
-  hospital_id: '',
-  status: 'pendente',
-  data_chegada: ''
-})
-
-const filtros = ref({
-  paciente: '',
-  bi: '',
-  risco: '',
-  data: ''
+  observacoes: ''
 })
 
 const triagensFiltradas = computed(() => {
   return triagens.value.filter(t => {
-    const nomeOk = !filtros.value.paciente || (t.paciente?.nome || '').toLowerCase().includes(filtros.value.paciente.toLowerCase())
-    const biOk = !filtros.value.bi || (t.paciente?.bi_numero || '').toLowerCase().includes(filtros.value.bi.toLowerCase())
-    const riscoOk = !filtros.value.risco || t.nivel_risco === filtros.value.risco
-    const dataOk = !filtros.value.data || (t.created_at && t.created_at.startsWith(filtros.value.data))
-    return nomeOk && biOk && riscoOk && dataOk
+    const pacienteNome = t.paciente?.nome?.toLowerCase() || ''
+    const pacienteBI = t.paciente?.bi_numero?.toLowerCase() || ''
+    const filtroPaciente = filtros.value.paciente.toLowerCase()
+    const filtroBI = filtros.value.bi.toLowerCase()
+
+    const matchNome = !filtroPaciente || pacienteNome.includes(filtroPaciente)
+    const matchBI = !filtroBI || pacienteBI.includes(filtroBI)
+    const matchRisco = !filtros.value.risco || t.nivel_risco === filtros.value.risco
+    const matchData = !filtros.value.data || t.created_at.startsWith(filtros.value.data)
+
+    return matchNome && matchBI && matchRisco && matchData
   })
 })
 
-const fetchTriagens = async () => {
+const calcularNivelRisco = () => {
+  const sintomasAtivos = Object.values(form.value.sintomas).filter(Boolean).length
+  if (sintomasAtivos >= 3) form.value.nivel_risco = 'alto'
+  else if (sintomasAtivos >= 2) form.value.nivel_risco = 'medio'
+  else if (sintomasAtivos >= 1) form.value.nivel_risco = 'baixo'
+  else form.value.nivel_risco = ''
+}
+
+watch(() => form.value.sintomas, calcularNivelRisco, { deep: true })
+
+const fetchData = async () => {
   try {
-    console.log('Buscando triagens...')
-    const response = await axios.get('http://127.0.0.1:8000/api/triagens', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    })
-    
-    console.log('Resposta da API:', response.data)
-    
-    // Garante que os dados estejam no formato correto
-    let triagensData = []
-    if (Array.isArray(response.data)) {
-      triagensData = response.data
-    } else if (response.data?.data && Array.isArray(response.data.data)) {
-      triagensData = response.data.data
-    }
-
-    // Processa e valida cada triagem
-    triagens.value = triagensData
-      .filter(triagem => triagem && typeof triagem === 'object')
-      .map(triagem => ({
-        id: triagem.id || null,
-        paciente: triagem.paciente || { nome: 'Paciente não encontrado', bi_numero: 'N/A' },
-        sintomas: triagem.sintomas || {},
-        nivel_risco: triagem.nivel_risco || 'baixo',
-        observacoes: triagem.observacoes || '',
-        created_at: triagem.created_at || null
-      }))
-
-    console.log('Triagens processadas:', triagens.value)
+    const [triagensRes, pacientesRes] = await Promise.all([
+      api.get('/triagens'),
+      api.get('/pacientes')
+    ])
+    triagens.value = triagensRes.data.data || triagensRes.data
+    pacientes.value = pacientesRes.data.data || pacientesRes.data
   } catch (error) {
-    console.error('Erro ao buscar triagens:', error)
-    if (error.response) {
-      console.error('Status do erro:', error.response.status)
-      console.error('Dados do erro:', error.response.data)
-    }
-    triagens.value = []
+    console.error("Erro ao buscar dados iniciais:", error)
   }
 }
 
-const fetchPacientes = async () => {
-  try {
-    console.log('Buscando pacientes...')
-    const response = await axios.get('http://127.0.0.1:8000/api/pacientes', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    })
-    
-    console.log('Resposta da API:', response.data)
-    
-    // Garante que os dados estejam no formato correto
-    let pacientesData = []
-    if (Array.isArray(response.data)) {
-      pacientesData = response.data
-    } else if (response.data?.data && Array.isArray(response.data.data)) {
-      pacientesData = response.data.data
-    }
-
-    pacientes.value = pacientesData
-      .filter(paciente => paciente && typeof paciente === 'object')
-      .map(paciente => ({
-        id: paciente.id || null,
-        nome: paciente.nome || 'Nome não informado',
-        bi_numero: paciente.bi_numero || 'N/A'
-      }))
-
-    console.log('Pacientes processados:', pacientes.value)
-  } catch (error) {
-    console.error('Erro ao buscar pacientes:', error)
-    if (error.response) {
-      console.error('Status do erro:', error.response.status)
-      console.error('Dados do erro:', error.response.data)
-    }
-    pacientes.value = []
-  }
-}
-
-const fetchHospitais = async () => {
-  try {
-    console.log('Iniciando busca de hospitais...')
-    const token = localStorage.getItem('token')
-    console.log('Token:', token)
-
-    if (!token) {
-      console.error('Token não encontrado')
-      return
-    }
-
-    const response = await axios({
-      method: 'get',
-      url: 'http://127.0.0.1:8000/api/hospitais',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    })
-
-    console.log('Resposta completa:', response)
-    console.log('Dados dos hospitais:', response.data)
-
-    if (!response.data) {
-      console.error('Resposta vazia da API')
-      hospitais.value = []
-      return
-    }
-
-    // Tenta diferentes formatos de resposta
-    let hospitaisData = []
-    if (Array.isArray(response.data)) {
-      hospitaisData = response.data
-    } else if (response.data.data && Array.isArray(response.data.data)) {
-      hospitaisData = response.data.data
-    } else if (typeof response.data === 'object') {
-      hospitaisData = [response.data]
-    }
-
-    console.log('Dados processados:', hospitaisData)
-
-    // Mapeia os hospitais
-    hospitais.value = hospitaisData.map(hospital => {
-      console.log('Processando hospital:', hospital)
-      return {
-        id: hospital.id,
-        nome: hospital.nome || 'Hospital sem nome'
-      }
-    })
-
-    console.log('Lista final de hospitais:', hospitais.value)
-  } catch (error) {
-    console.error('Erro detalhado ao buscar hospitais:', error)
-    if (error.response) {
-      console.error('Status do erro:', error.response.status)
-      console.error('Dados do erro:', error.response.data)
-      console.error('Headers do erro:', error.response.headers)
-    } else if (error.request) {
-      console.error('Erro na requisição:', error.request)
-    } else {
-      console.error('Mensagem de erro:', error.message)
-    }
-    hospitais.value = []
-  }
-}
-
-const fetchDirecoesProvinciais = async () => {
-  try {
-    console.log('Buscando direções provinciais...')
-    const response = await axios.get('http://127.0.0.1:8000/api/gabinetes-provinciais', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    })
-    
-    console.log('Resposta direções provinciais:', response.data)
-    direcoesProvinciais.value = Array.isArray(response.data) ? response.data : 
-                               response.data.data ? response.data.data : []
-  } catch (error) {
-    console.error('Erro ao buscar direções provinciais:', error)
-    direcoesProvinciais.value = []
-  }
-}
-
-const fetchDirecoesMunicipais = async () => {
-  try {
-    const response = await axios.get('http://127.0.0.1:8000/api/direcoes-municipais', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    })
-    
-    if (Array.isArray(response.data)) {
-      direcoesMunicipais.value = response.data
-    } else if (response.data.data && Array.isArray(response.data.data)) {
-      direcoesMunicipais.value = response.data.data
-    } else {
-      console.error('Formato de dados inesperado:', response.data)
-      direcoesMunicipais.value = []
-    }
-  } catch (error) {
-    console.error('Erro ao buscar direções municipais:', error)
-    if (error.response) {
-      switch (error.response.status) {
-        case 401:
-          alert('Sessão expirada. Por favor, faça login novamente.')
-          break
-        case 403:
-          alert('Você não tem permissão para visualizar direções municipais.')
-          break
-        case 404:
-          console.warn('Endpoint de direções municipais não encontrado. Verificando permissões...')
-          break
-        default:
-          alert('Erro ao carregar direções municipais. Por favor, tente novamente.')
-      }
-    } else {
-      alert('Erro de conexão. Verifique se o servidor está rodando.')
-    }
-    direcoesMunicipais.value = []
-  }
-}
+onMounted(fetchData)
 
 const openNewTriagemModal = () => {
+  isEditing.value = false
+  triagemAtual.value = null
   form.value = {
     paciente_id: '',
-    sintomas: {
-      diarreia: false,
-      vomito: false,
-      desidratacao: false,
-      dor_abdominal: false,
-      fraqueza: false
-    },
+    sintomas: { diarreia: false, vomito: false, desidratacao: false, dor_abdominal: false, fraqueza: false },
     nivel_risco: '',
     observacoes: ''
   }
+  modalState.value = 'form'
   showModal.value = true
-  isCreatingEncaminhamento.value = false
+}
+
+const viewTriagem = (triagem) => {
+  triagemAtual.value = triagem
+  modalState.value = 'details'
+  showModal.value = true
+}
+
+const gerarQRCode = (triagem) => {
+  triagemAtual.value = triagem
+  modalState.value = 'qr'
+  showModal.value = true
+  nextTick(() => {
+    if (qrCodeContainer.value) {
+      qrCodeContainer.value.innerHTML = ''
+      QRCode.toCanvas(JSON.stringify({ triagemId: triagem.id, paciente: triagem.paciente.nome }), { width: 200 }, (err, canvas) => {
+        if (err) console.error(err)
+        qrCodeContainer.value.appendChild(canvas)
+      })
+    }
+  })
 }
 
 const closeModal = () => {
   showModal.value = false
-  editingTriagem.value = {}
-  isCreatingEncaminhamento.value = false
-  hospitais.value = []
-  form.value = {
-    paciente_id: '',
-    sintomas: {
-      diarreia: false,
-      vomito: false,
-      desidratacao: false,
-      dor_abdominal: false,
-      fraqueza: false
-    },
-    nivel_risco: '',
-    observacoes: '',
-    triagem_id: '',
-    hospital_id: '',
-    status: 'pendente',
-    data_chegada: ''
-  }
-}
-
-const haversine = (lat1, lon1, lat2, lon2) => {
-  const toRad = x => (x * Math.PI) / 180
-  const R = 6371 // km
-  const dLat = toRad(lat2 - lat1)
-  const dLon = toRad(lon2 - lon1)
-  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2)
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-  return R * c
+  triagemAtual.value = null
 }
 
 const handleSubmit = async () => {
+  const data = {
+    ...form.value
+  };
+
   try {
-    // Validação dos campos obrigatórios
-    if (!form.value.paciente_id) {
-      alert('Por favor, selecione um paciente.')
-      return
+    if (isEditing.value) {
+      await api.put(`/triagens/${triagemAtual.value.id}`, data)
+    } else {
+      await api.post('/triagens', data)
     }
-
-    // Validação de pelo menos um sintoma
-    const temSintomas = Object.values(form.value.sintomas).some(sintoma => sintoma === true)
-    if (!temSintomas) {
-      alert('Por favor, selecione pelo menos um sintoma.')
-      return
-    }
-
-    // Validação do nível de risco
-    if (!form.value.nivel_risco) {
-      alert('Por favor, selecione o nível de risco.')
-      return
-    }
-
-    // Envia a triagem para o backend
-    const response = await axios.post('http://127.0.0.1:8000/api/triagens', {
-      paciente_id: form.value.paciente_id,
-      sintomas: form.value.sintomas,
-      nivel_risco: form.value.nivel_risco,
-      observacoes: form.value.observacoes
-    }, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    })
-
-    // Mensagem de sucesso
-    alert('Triagem cadastrada com sucesso!')
-
-    // (Opcional) Se o backend retornar info do encaminhamento, exiba:
-    if (response.data.encaminhamento) {
-      alert('Encaminhamento automático realizado para o hospital: ' + (response.data.encaminhamento.hospital?.nome || ''))
-    }
-
-    // Atualize a lista de triagens, feche modal, etc.
-    await fetchTriagens()
     closeModal()
+    fetchData()
   } catch (error) {
-    // Trate os erros normalmente
-    console.error('Erro ao salvar triagem:', error)
-    alert('Erro ao salvar triagem. Por favor, tente novamente.')
-  }
-}
-
-const viewTriagem = async (triagem) => {
-  try {
-    console.log('Buscando detalhes da triagem:', triagem.id)
-    const response = await axios.get(`http://127.0.0.1:8000/api/triagens/${triagem.id}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    })
-
-    console.log('Detalhes da triagem:', response.data)
-    
-    if (!response.data) {
-      throw new Error('Dados da triagem não encontrados')
-    }
-
-    showModal.value = true
-    isCreatingEncaminhamento.value = false
-    editingTriagem.value = {
-      ...response.data,
-      paciente: response.data.paciente || {},
-      sintomas: response.data.sintomas || {}
-    }
-  } catch (error) {
-    console.error('Erro ao buscar detalhes da triagem:', error)
-    if (error.response) {
-      switch (error.response.status) {
-        case 401:
-          alert('Sessão expirada. Por favor, faça login novamente.')
-          break
-        case 403:
-          alert('Você não tem permissão para visualizar esta triagem.')
-          break
-        case 404:
-          alert('Triagem não encontrada.')
-          break
-        default:
-          alert('Erro ao carregar detalhes da triagem. Por favor, tente novamente.')
-      }
+    console.error("Erro ao salvar triagem:", error)
+    if (error.response?.data?.errors) {
+      const errors = error.response.data.errors;
+      const errorMessage = Object.values(errors).flat().join('\n');
+      alert(`Erro de validação:\n${errorMessage}`);
     } else {
-      alert('Erro de conexão. Verifique se o servidor está rodando.')
+      alert('Ocorreu um erro ao salvar a triagem.');
     }
   }
-}
-
-const createEncaminhamento = async (triagem) => {
-  try {
-    console.log('Criando encaminhamento para triagem:', triagem.id)
-    
-    // Primeiro, buscar hospitais disponíveis
-    const responseHospitais = await axios.get('http://127.0.0.1:8000/api/hospitais', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    })
-
-    if (!responseHospitais.data || responseHospitais.data.length === 0) {
-      alert('Não há hospitais disponíveis para encaminhamento.')
-      return
-    }
-
-    // Abrir modal de encaminhamento
-    showModal.value = true
-    isCreatingEncaminhamento.value = true
-    editingTriagem.value = triagem
-    form.value = {
-      triagem_id: triagem.id,
-      hospital_id: '',
-      status: 'pendente',
-      observacoes: '',
-      data_chegada: ''
-    }
-    hospitais.value = responseHospitais.data
-  } catch (error) {
-    console.error('Erro ao preparar encaminhamento:', error)
-    if (error.response) {
-      switch (error.response.status) {
-        case 401:
-          alert('Sessão expirada. Por favor, faça login novamente.')
-          break
-        case 403:
-          alert('Você não tem permissão para criar encaminhamentos.')
-          break
-        default:
-          alert('Erro ao carregar hospitais. Por favor, tente novamente.')
-      }
-    } else {
-      alert('Erro de conexão. Verifique se o servidor está rodando.')
-    }
-  }
-}
-
-const handleEncaminhamentoSubmit = async () => {
-  try {
-    if (!form.value.hospital_id) {
-      alert('Por favor, selecione um hospital.')
-      return
-    }
-
-    if (!form.value.status) {
-      alert('Por favor, selecione um status.')
-      return
-    }
-
-    // Validação da data de chegada quando o status é concluido
-    if (form.value.status === 'concluido' && !form.value.data_chegada) {
-      alert('Por favor, informe a data de chegada quando o status for concluído.')
-      return
-    }
-
-    // Preparar os dados no formato correto para a API
-    const encaminhamentoData = {
-      triagem_id: form.value.triagem_id,
-      hospital_id: form.value.hospital_id,
-      status: form.value.status,
-      observacoes: form.value.observacoes || '',
-      data_chegada: form.value.status === 'concluido' ? form.value.data_chegada : null
-    }
-
-    console.log('Enviando encaminhamento:', encaminhamentoData)
-    const response = await axios.post('http://127.0.0.1:8000/api/encaminhamentos', encaminhamentoData, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    })
-
-    console.log('Encaminhamento criado com sucesso:', response.data)
-    alert('Encaminhamento criado com sucesso!')
-    closeModal()
-    await fetchTriagens() // Atualiza a lista de triagens
-  } catch (error) {
-    console.error('Erro ao criar encaminhamento:', error)
-    if (error.response) {
-      switch (error.response.status) {
-        case 401:
-          alert('Sessão expirada. Por favor, faça login novamente.')
-          break
-        case 403:
-          alert('Você não tem permissão para criar encaminhamentos.')
-          break
-        case 422:
-          const mensagensErro = error.response.data.errors || {}
-          const mensagem = Object.entries(mensagensErro)
-            .map(([campo, erros]) => `${campo}: ${erros.join(', ')}`)
-            .join('\n')
-          alert(`Erro ao criar encaminhamento:\n${mensagem}`)
-          break
-        default:
-          alert('Erro ao criar encaminhamento. Por favor, tente novamente.')
-      }
-    } else {
-      alert('Erro de conexão. Verifique se o servidor está rodando.')
-    }
-  }
-}
-
-const encaminharPaciente = async (triagem) => {
-  try {
-    if (!isValidTriagem(triagem)) {
-      console.error('Triagem inválida:', triagem)
-      alert('Erro: Triagem inválida')
-      return
-    }
-
-    console.log('Preparando encaminhamento para paciente:', triagem.paciente?.nome)
-    
-    const responseHospitais = await axios.get('http://127.0.0.1:8000/api/hospitais', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    })
-
-    const hospitaisData = responseHospitais.data?.data || responseHospitais.data || []
-    
-    if (!hospitaisData.length) {
-      alert('Não há hospitais disponíveis para encaminhamento.')
-      return
-    }
-
-    showModal.value = true
-    isCreatingEncaminhamento.value = true
-    editingTriagem.value = triagem
-    form.value = {
-      triagem_id: triagem.id,
-      hospital_id: '',
-      status: 'pendente',
-      observacoes: `Encaminhamento para ${triagem.paciente?.nome || 'paciente'}`,
-      data_chegada: ''
-    }
-    hospitais.value = hospitaisData
-  } catch (error) {
-    console.error('Erro ao preparar encaminhamento:', error)
-    if (error.response) {
-      switch (error.response.status) {
-        case 401:
-          alert('Sessão expirada. Por favor, faça login novamente.')
-          break
-        case 403:
-          alert('Você não tem permissão para criar encaminhamentos.')
-          break
-        default:
-          alert('Erro ao carregar hospitais. Por favor, tente novamente.')
-      }
-    } else {
-      alert('Erro de conexão. Verifique se o servidor está rodando.')
-    }
-  }
-}
-
-const formatDate = (date) => {
-  if (!date) return 'N/A'
-  return new Date(date).toLocaleDateString('pt-AO', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  })
-}
-
-const formatTime = (date) => {
-  if (!date) return ''
-  return new Date(date).toLocaleTimeString('pt-AO', {
-    hour: '2-digit',
-    minute: '2-digit'
-  })
 }
 
 const excluirTriagem = async (triagem) => {
-  if (!confirm(`Tem certeza que deseja excluir esta triagem?`)) return
-  try {
-    await axios.delete(`http://127.0.0.1:8000/api/triagens/${triagem.id}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    })
-    alert('Triagem excluída com sucesso!')
-    await fetchTriagens()
-  } catch (error) {
-    console.error('Erro ao excluir triagem:', error)
-    alert('Erro ao excluir triagem. Por favor, tente novamente.')
+  if (confirm(`Tem certeza que deseja excluir a triagem do paciente ${triagem.paciente.nome}?`)) {
+    try {
+      await api.delete(`/triagens/${triagem.id}`)
+      fetchData()
+    } catch (error) {
+      console.error("Erro ao excluir triagem:", error)
+    }
   }
 }
 
 const excluirTodasTriagens = async () => {
-  if (!confirm('Tem certeza que deseja excluir TODAS as triagens filtradas?')) return
-  try {
-    for (const t of triagensFiltradas.value) {
-      await axios.delete(`http://127.0.0.1:8000/api/triagens/${t.id}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
-      })
+  if (confirm('TEM CERTEZA? Esta ação vai excluir TODAS as triagens e não pode ser desfeita.')) {
+    try {
+      await api.delete('/triagens/excluir-todas')
+      fetchData()
+    } catch (error) {
+      console.error("Erro ao excluir todas as triagens:", error)
+      alert("Ocorreu um erro ao excluir todas as triagens. Verifique se a funcionalidade é suportada pela API.");
     }
-    alert('Triagens excluídas com sucesso!')
-    await fetchTriagens()
-  } catch (error) {
-    console.error('Erro ao excluir triagens:', error)
-    alert('Erro ao excluir triagens. Por favor, tente novamente.')
   }
 }
 
-// Função para calcular o risco automaticamente
-function calcularRisco(sintomas) {
-  const total = Object.values(sintomas).filter(Boolean).length;
-  if (sintomas.desidratacao || total >= 3) return 'alto';
-  if (total === 2) return 'medio';
-  return 'baixo';
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A'
+  return new Date(dateString).toLocaleDateString('pt-AO')
 }
-
-// Atualiza o risco automaticamente ao mudar sintomas
-watch(() => form.value.sintomas, (novosSintomas) => {
-  form.value.nivel_risco = calcularRisco(novosSintomas);
-}, { deep: true });
+const formatTime = (dateString) => {
+  if (!dateString) return ''
+  return new Date(dateString).toLocaleTimeString('pt-AO')
+}
 
 const qrCodeData = ref(null)
 const showQRCodeModal = ref(false)
-
-const gerarQRCode = async (triagem) => {
-  try {
-    if (!triagem?.id) {
-      alert('Triagem não encontrada para gerar QR Code.');
-      return;
-    }
-    const response = await axios.get(`http://127.0.0.1:8000/api/triagens/${triagem.id}/qr`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    });
-    if (response.data && response.data.dados) {
-      qrCodeData.value = JSON.stringify(response.data.dados)
-      showQRCodeModal.value = true
-    } else {
-      alert('Erro ao obter dados para QR Code: Formato de resposta inválido');
-    }
-  } catch (error) {
-    console.error('Erro ao gerar QR Code:', error);
-    alert('Erro ao gerar QR Code. Por favor, tente novamente.');
-  }
-};
 
 const closeQRCodeModal = () => {
   showQRCodeModal.value = false
   qrCodeData.value = null
 }
-
-onMounted(async () => {
-  console.log('Componente montado, iniciando carregamento de dados...')
-  try {
-    await Promise.all([
-      fetchTriagens(),
-      fetchPacientes(),
-      fetchHospitais(),
-      fetchDirecoesProvinciais(),
-      fetchDirecoesMunicipais()
-    ])
-    console.log('Todos os dados iniciais carregados com sucesso')
-  } catch (error) {
-    console.error('Erro ao inicializar componente:', error)
-  }
-})
 </script> 

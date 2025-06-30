@@ -70,6 +70,7 @@ const menuItems = [
   { name: 'Usuários', path: '/dashboard/admin/usuarios', icon: UserGroupIcon },
   { name: 'Hospitais', path: '/dashboard/admin/hospitais', icon: BuildingOfficeIcon },
   { name: 'Ambulâncias', path: '/dashboard/admin/ambulancias', icon: TruckIcon },
+  { name: 'Pacientes', path: '/dashboard/admin/pacientes', icon: UserGroupIcon },
   { name: 'Gabinetes', path: '/dashboard/admin/gabinetes', icon: HomeIcon },
   { name: 'Logs do Sistema', path: '/dashboard/admin/logs', icon: DocumentTextIcon },
 ]

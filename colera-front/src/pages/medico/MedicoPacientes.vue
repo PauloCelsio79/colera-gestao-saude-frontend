@@ -15,9 +15,8 @@
 
     <!-- Gráfico de Risco dos Pacientes -->
     <div v-if="!loading && !error" class="p-4 flex flex-col items-center justify-center border-b border-secondary-700">
-      <h4 class="text-base font-semibold mb-2 text-secondary-200">Distribuição de Pacientes por Nível de Risco</h4>
-      <div class="w-[180px] h-[180px] flex items-center justify-center">
-        <canvas id="graficoRiscoPacientes" width="180" height="180"></canvas>
+      <div class="w-full max-w-lg h-64 mx-auto">
+        <canvas id="graficoRiscoPacientes"></canvas>
       </div>
     </div>
 
@@ -137,13 +136,28 @@
                 <label class="block text-sm font-medium text-secondary-300">Endereço</label>
                 <input v-model="form.endereco" type="text" class="input-field mt-1" required />
               </div>
-              <div class="sm:col-span-1">
-                <label class="block text-sm font-medium text-secondary-300">Latitude</label>
-                <input v-model="form.latitude" type="text" class="input-field mt-1" required />
-              </div>
-              <div class="sm:col-span-1">
-                <label class="block text-sm font-medium text-secondary-300">Longitude</label>
-                <input v-model="form.longitude" type="text" class="input-field mt-1" required />
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-gray-300 mb-2">Localização (Clique no mapa para definir)</label>
+                <div class="w-full h-64 rounded-lg shadow-inner bg-gray-700" id="map-container">
+                    <l-map
+                      ref="map"
+                      v-model:zoom="zoom"
+                      :center="mapCenter"
+                      @click="handleMapClick"
+                      style="height: 100%; width: 100%; z-index: 0;"
+                    >
+                      <l-tile-layer
+                        :url="tileLayerUrl"
+                        :attribution="attribution"
+                      ></l-tile-layer>
+                      <l-marker v-if="form.latitude && form.longitude" :lat-lng="[form.latitude, form.longitude]">
+                          <l-popup> Localização do Paciente </l-popup>
+                      </l-marker>
+                    </l-map>
+                </div>
+                <div class="mt-2 text-sm text-gray-400">
+                  Lat: {{ form.latitude || 'N/A' }}, Long: {{ form.longitude || 'N/A' }}
+                </div>
               </div>
             </form>
           </div>
@@ -162,10 +176,22 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
 import Chart from 'chart.js/auto'
+import api from '@/api'
+import "leaflet/dist/leaflet.css";
+import { LMap, LTileLayer, LMarker, LPopup } from "@vue-leaflet/vue-leaflet";
+import L from 'leaflet';
+
+// Corrige o caminho do ícone padrão do Leaflet no Vite
+import iconUrl from 'leaflet/dist/images/marker-icon.png';
+import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: iconUrl,
+  iconUrl: iconUrl,
+  shadowUrl: shadowUrl,
+});
 
 const router = useRouter()
 const pacientes = ref([])
@@ -184,6 +210,14 @@ const form = ref({
   latitude: '',
   longitude: ''
 })
+
+// Configuração do mapa
+const map = ref(null);
+const zoom = ref(8); 
+const defaultCenter = [-14.25, 14.83]; 
+const mapCenter = ref(defaultCenter);
+const tileLayerUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+const attribution = '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>';
 
 const filtros = ref({ nome: '', bi: '' })
 
@@ -209,106 +243,97 @@ const contagemRiscos = computed(() => {
 let graficoRisco = null
 
 const renderizarGrafico = () => {
-  const ctx = document.getElementById('graficoRiscoPacientes')
-  if (!ctx) return
-  if (graficoRisco) graficoRisco.destroy()
+  nextTick(() => {
+    const ctx = document.getElementById('graficoRiscoPacientes')
+    if (!ctx) return
+    if (graficoRisco) graficoRisco.destroy()
 
-  Chart.defaults.color = '#9ca3af';
+    Chart.defaults.color = '#9ca3af';
 
-  graficoRisco = new Chart(ctx, {
-    type: 'pie',
-    data: {
-      labels: ['Alto Risco', 'Médio Risco', 'Baixo Risco'],
-      datasets: [{
-        data: [contagemRiscos.value.alto, contagemRiscos.value.medio, contagemRiscos.value.baixo],
-        backgroundColor: ['#ef4444', '#f97316', '#22c55e'],
-        borderColor: '#374151',
-        borderWidth: 2
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: {
+    graficoRisco = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Alto Risco', 'Médio Risco', 'Baixo Risco'],
+        datasets: [{
+          label: 'Número de Pacientes',
+          data: [contagemRiscos.value.alto, contagemRiscos.value.medio, contagemRiscos.value.baixo],
+          backgroundColor: [
+            'rgba(239, 68, 68, 0.6)',
+            'rgba(249, 115, 22, 0.6)',
+            'rgba(34, 197, 94, 0.6)'
+          ],
+          borderColor: [
+            '#ef4444',
+            '#f97316',
+            '#22c55e'
+          ],
+          borderWidth: 1,
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false,
+          },
+          title: {
+            display: true,
+            text: 'Distribuição de Pacientes por Nível de Risco',
             color: '#d1d5db',
-            padding: 15,
+            padding: {
+                bottom: 20
+            },
             font: {
-              size: 12
+              size: 16,
+              weight: 'bold'
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)'
+            },
+            ticks: {
+              color: '#d1d5db',
+              precision: 0
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              color: '#d1d5db'
             }
           }
         }
       }
-    }
-  })
+    })
+  });
 }
 
-watch(pacientesFiltrados, renderizarGrafico)
+watch(pacientesFiltrados, renderizarGrafico, { deep: true })
 
 const fetchPacientes = async () => {
   loading.value = true
   error.value = null
   try {
-    console.log('Iniciando busca de pacientes...')
-    const token = localStorage.getItem('token')
-    console.log('Token:', token ? 'Presente' : 'Ausente')
-
-    const response = await axios.get('http://127.0.0.1:8000/api/pacientes', {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    })
-
-    console.log('Resposta da API:', response.data)
-
-    if (Array.isArray(response.data)) {
-      pacientes.value = response.data
-      console.log('Pacientes carregados:', pacientes.value.length)
-    } else if (response.data.data && Array.isArray(response.data.data)) {
-      // Caso a API retorne os dados dentro de um objeto com propriedade 'data'
-      pacientes.value = response.data.data
-      console.log('Pacientes carregados (dentro de data):', pacientes.value.length)
-    } else {
-      console.error('Formato de dados inesperado:', response.data)
-      pacientes.value = []
-      error.value = 'Formato de dados inválido recebido da API'
+    const response = await api.get('/pacientes')
+    if (response.data && Array.isArray(response.data.data)) {
+      pacientes.value = response.data.data;
+    } else if (Array.isArray(response.data)) {
+      pacientes.value = response.data;
     }
-  } catch (error) {
-    console.error('Erro ao buscar pacientes:', error)
-    pacientes.value = []
-    
-    if (error.response) {
-      console.error('Status do erro:', error.response.status)
-      console.error('Dados do erro:', error.response.data)
-      
-      switch (error.response.status) {
-        case 401:
-          error.value = 'Sessão expirada. Por favor, faça login novamente.'
-          // Opcional: redirecionar para login
-          // router.push('/login')
-          break
-        case 403:
-          error.value = 'Você não tem permissão para acessar esta página.'
-          break
-        case 404:
-          error.value = 'API não encontrada. Verifique se o servidor está rodando.'
-          break
-        default:
-          error.value = 'Erro ao carregar pacientes. Por favor, tente novamente.'
-      }
-    } else if (error.request) {
-      console.error('Erro na requisição:', error.request)
-      error.value = 'Erro de conexão. Verifique se o servidor está rodando.'
-    } else {
-      console.error('Erro:', error.message)
-      error.value = 'Erro ao carregar pacientes: ' + error.message
-    }
+  } catch (err) {
+    console.error("Erro ao buscar pacientes:", err)
+    error.value = 'Falha ao carregar pacientes.'
   } finally {
     loading.value = false
+    renderizarGrafico()
   }
 }
 
@@ -321,145 +346,78 @@ const openNewPacienteModal = () => {
     data_nascimento: '',
     endereco: '',
     genero: '',
-    latitude: '',
-    longitude: ''
+    latitude: defaultCenter[0],
+    longitude: defaultCenter[1]
   }
   showModal.value = true
+  nextTick(() => {
+    mapCenter.value = defaultCenter;
+    zoom.value = 8;
+    if (map.value) {
+        map.value.leafletObject.invalidateSize();
+        map.value.leafletObject.setView(mapCenter.value, zoom.value);
+    }
+  });
 }
 
 const editPaciente = (paciente) => {
   editingPaciente.value = paciente
   form.value = { ...paciente }
   showModal.value = true
+  nextTick(() => {
+      if (map.value) {
+          const lat = parseFloat(paciente.latitude);
+          const lng = parseFloat(paciente.longitude);
+          const newCenter = [lat || defaultCenter[0], lng || defaultCenter[1]];
+          const newZoom = (lat && lng) ? 15 : 8;
+          
+          map.value.leafletObject.invalidateSize();
+          map.value.leafletObject.setView(newCenter, newZoom);
+      }
+  });
 }
 
 const closeModal = () => {
   showModal.value = false
-  editingPaciente.value = null
-  form.value = {
-    nome: '',
-    bi_numero: '',
-    telefone: '',
-    data_nascimento: '',
-    endereco: '',
-    genero: '',
-    latitude: '',
-    longitude: ''
-  }
 }
 
 const handleSubmit = async () => {
   try {
-    // Validação dos campos
-    if (!form.value.nome || !form.value.bi_numero || !form.value.telefone || 
-        !form.value.data_nascimento || !form.value.endereco || !form.value.genero) {
-      alert('Por favor, preencha todos os campos obrigatórios.')
-      return
-    }
-
-    // Converter latitude e longitude para números
-    const data = {
-      ...form.value,
-      latitude: parseFloat(form.value.latitude) || 0,
-      longitude: parseFloat(form.value.longitude) || 0
-    }
-
     if (editingPaciente.value) {
-      await axios.put(`http://127.0.0.1:8000/api/pacientes/${editingPaciente.value.id}`, data, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
-      })
+      await api.put(`/pacientes/${editingPaciente.value.id}`, form.value)
     } else {
-      await axios.post('http://127.0.0.1:8000/api/pacientes', data, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
-      })
+      await api.post('/pacientes', form.value)
     }
-    await fetchPacientes()
     closeModal()
-  } catch (error) {
-    console.error('Erro ao salvar paciente:', error)
-    if (error.response) {
-      console.error('Detalhes do erro:', error.response.data)
-      if (error.response.status === 401) {
-        alert('Sessão expirada. Por favor, faça login novamente.')
-      } else if (error.response.status === 422) {
-        const mensagensErro = error.response.data.errors || {}
-        const mensagem = Object.entries(mensagensErro)
-          .map(([campo, erros]) => `${campo}: ${erros.join(', ')}`)
-          .join('\n')
-        alert(`Erro ao salvar:\n${mensagem}`)
-      } else {
-        alert(error.response.data.message || 'Erro ao salvar paciente')
-      }
-    } else {
-      alert('Erro ao salvar paciente. Verifique a conexão com o servidor.')
+    fetchPacientes()
+  } catch (err) {
+    console.error("Erro ao salvar paciente:", err)
+    error.value = 'Falha ao salvar paciente.'
+  }
+}
+
+const viewTriagens = (paciente) => {
+  router.push({ name: 'medico-paciente-triagens', params: { id: paciente.id } })
+}
+
+const formatDate = (dateString) => {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  return date.toLocaleDateString('pt-AO')
+}
+
+const handleMapClick = (event) => {
+    if (event.latlng) {
+        form.value.latitude = event.latlng.lat;
+        form.value.longitude = event.latlng.lng;
     }
-  }
-}
-
-const viewTriagens = async (paciente) => {
-  if (!paciente || !paciente.id) {
-    console.error('Paciente inválido:', paciente)
-    return
-  }
-
-  try {
-    console.log('Buscando triagens do paciente:', paciente.id)
-    const response = await axios.get(`http://127.0.0.1:8000/api/pacientes/${paciente.id}/triagens`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    })
-
-    console.log('Triagens encontradas:', response.data)
-    
-    // Armazena as triagens no localStorage para uso na próxima página
-    localStorage.setItem('triagensPaciente', JSON.stringify(response.data))
-    
-    // Navega para a página de triagens
-    router.push(`/dashboard/medico/pacientes/${paciente.id}/triagens`)
-  } catch (error) {
-    console.error('Erro ao buscar triagens:', error)
-    
-    if (error.response) {
-      switch (error.response.status) {
-        case 401:
-          alert('Sessão expirada. Por favor, faça login novamente.')
-          // Opcional: redirecionar para login
-          // router.push('/login')
-          break
-        case 403:
-          alert('Você não tem permissão para acessar as triagens deste paciente.')
-          break
-        case 404:
-          alert('Paciente não encontrado.')
-          break
-        default:
-          alert('Erro ao carregar triagens. Por favor, tente novamente.')
-      }
-    } else {
-      alert('Erro de conexão. Verifique se o servidor está rodando.')
-    }
-  }
-}
-
-const formatDate = (date) => {
-  if (!date) return 'N/A'
-  return new Date(date).toLocaleDateString('pt-AO')
-}
+};
 
 onMounted(() => {
-  fetchPacientes().then(() => {
-    setTimeout(renderizarGrafico, 300)
-  })
+  fetchPacientes()
 })
-</script> 
+</script>
+
+<style scoped>
+/* ... */
+</style> 

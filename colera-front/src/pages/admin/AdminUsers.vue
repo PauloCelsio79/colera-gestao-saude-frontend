@@ -314,6 +314,7 @@ import PainelPrevencaoColera from '@/components/PainelPrevencaoColera.vue'
 import api from '@/api'
 
 const users = ref([])
+const loading = ref(true)
 const showModal = ref(false)
 const showConfirmModal = ref(false)
 const editingUser = ref(null)
@@ -371,49 +372,21 @@ const aplicarFiltros = () => {
   console.log('Filtros aplicados:', filtros.value)
 }
 
-const fetchUsers = async () => {
+const fetchUsuarios = async () => {
+  loading.value = true;
   try {
-    console.log('Buscando usuários...')
-    const response = await api.get('/users')
-    
-    console.log('Resposta da API:', response.data)
-    
-    // Garante que os dados estejam no formato correto
-    let usuariosData = []
-    if (Array.isArray(response.data)) {
-      usuariosData = response.data
-    } else if (response.data?.data && Array.isArray(response.data.data)) {
-      usuariosData = response.data.data
+    const response = await api.get('/usuarios');
+    if (response.data && Array.isArray(response.data.data)) {
+      users.value = response.data.data;
+    } else if (Array.isArray(response.data)) {
+      users.value = response.data;
     }
-
-    users.value = usuariosData
-      .filter(usuario => usuario && typeof usuario === 'object')
-      .map(usuario => ({
-        id: usuario.id || null,
-        name: usuario.name || 'Nome não informado',
-        email: usuario.email || 'Email não informado',
-        tipo: usuario.tipo || 'Tipo não informado',
-        telefone: usuario.telefone || 'Telefone não informado',
-        ativo: usuario.ativo !== undefined ? usuario.ativo : true // Garante que o status seja carregado do backend
-      }))
-
-    console.log('Usuários processados:', users.value)
   } catch (error) {
-    console.error('Erro ao buscar usuários:', error)
-    if (error.response) {
-      console.error('Status do erro:', error.response.status)
-      console.error('Dados do erro:', error.response.data)
-      alert(error.response.data.message || 'Erro ao carregar usuários')
-    } else if (error.request) {
-      console.error('Erro na requisição:', error.request)
-      alert('Erro de conexão com o servidor')
-    } else {
-      console.error('Mensagem de erro:', error.message)
-      alert(error.message)
-    }
-    users.value = []
+    console.error('Erro ao buscar usuários:', error);
+  } finally {
+    loading.value = false;
   }
-}
+};
 
 const openNewUserModal = () => {
   editingUser.value = null
@@ -453,46 +426,35 @@ const closeModal = () => {
 }
 
 const handleSubmit = async () => {
-  const url = editingUser.value ? `/users/${editingUser.value.id}` : '/users'
-  const method = editingUser.value ? 'put' : 'post'
+  const isEdit = !!form.value.id;
+  const url = isEdit ? `/usuarios/${form.value.id}` : '/register';
+  const method = isEdit ? 'put' : 'post';
 
   try {
-    await api[method](url, form.value)
-    await fetchUsers()
-    closeModal()
+    await api[method](url, form.value);
+    fetchUsuarios();
+    closeModal();
   } catch (error) {
-    console.error('Erro ao salvar usuário:', error)
-    if (error.response) {
-      alert(error.response.data.message || 'Erro ao salvar usuário')
+    console.error('Erro ao salvar usuário:', error);
+  }
+};
+
+const deleteUser = async (id) => {
+  if (confirm('Tem certeza que deseja excluir este usuário?')) {
+    try {
+      await api.delete(`/usuarios/${id}`);
+      fetchUsuarios();
+    } catch (error) {
+      console.error('Erro ao excluir usuário:', error);
     }
   }
-}
-
-const deleteUser = async (userId) => {
-  if (!confirm('Tem certeza que deseja excluir este usuário?')) return
-  
-  try {
-    await api.delete(`/users/${userId}`)
-    await fetchUsers()
-  } catch (error) {
-    console.error('Erro ao excluir usuário:', error)
-  }
-}
+};
 
 // Função para abrir modal de confirmação
-const toggleAcesso = async (usuario) => {
-  const originalStatus = usuario.ativo
-  usuario.ativo = !usuario.ativo // Otimista
-
-  try {
-    await api.put(`/users/${usuario.id}`, { ...usuario, ativo: usuario.ativo })
-    // Opcional: pode-se atualizar o usuário com a resposta da API
-  } catch (error) {
-    console.error('Erro ao alterar o status do usuário:', error)
-    usuario.ativo = originalStatus // Reverte em caso de erro
-    // Exibir mensagem de erro
-  }
-}
+const toggleAcesso = (usuario) => {
+  selectedUser.value = usuario;
+  showConfirmModal.value = true;
+};
 
 // Função para confirmar a alteração de acesso
 const confirmarAcesso = async () => {
@@ -524,7 +486,7 @@ const confirmarAcesso = async () => {
     selectedUser.value = null
 
     // Recarrega os usuários para garantir sincronização com o backend
-    await fetchUsers()
+    await fetchUsuarios()
 
   } catch (error) {
     console.error('Erro ao alterar acesso:', error)
@@ -541,6 +503,6 @@ const cancelarAcesso = () => {
 }
 
 onMounted(() => {
-  fetchUsers()
+  fetchUsuarios()
 })
 </script>

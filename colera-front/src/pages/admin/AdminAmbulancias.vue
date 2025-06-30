@@ -83,6 +83,15 @@
               <option value="em_servico">Em Serviço</option>
               <option value="em_manutencao">Em Manutenção</option>
             </select>
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-300 mb-2">Hospital de Base</label>
+              <select v-model="currentAmbulancia.hospital_id" required class="input-field bg-gray-700 border-gray-600 text-white rounded-lg focus:ring-primary-500 focus:border-primary-500 w-full">
+                <option disabled value="">Selecione o Hospital</option>
+                <option v-for="hospital in hospitais" :key="hospital.id" :value="hospital.id">
+                  {{ hospital.nome }}
+                </option>
+              </select>
+            </div>
           </div>
           <div class="mb-4">
               <label class="block text-sm font-medium text-gray-300 mb-2">Localização da Base (Clique no mapa para definir)</label>
@@ -153,6 +162,7 @@ L.Icon.Default.mergeOptions({
 
 // Estado reativo
 const ambulancias = ref([]);
+const hospitais = ref([]);
 const loading = ref(true);
 const saving = ref(false);
 const deleting = ref(false);
@@ -174,6 +184,7 @@ const defaultAmbulancia = {
   status: 'disponivel',
   latitude: null,
   longitude: null,
+  hospital_id: null,
 };
 const currentAmbulancia = ref({ ...defaultAmbulancia });
 const ambulanciaToDelete = ref(null);
@@ -188,29 +199,38 @@ const attribution = '&copy; <a href="http://www.openstreetmap.org/copyright">Ope
 
 
 // Funções
-const fetchAmbulancias = async () => {
+const fetchData = async () => {
   loading.value = true;
   try {
-    const response = await api.get('/ambulancias');
-    // A API pode retornar um objeto com a propriedade 'data' contendo o array
-    if (response.data && Array.isArray(response.data.data)) {
-      ambulancias.value = response.data.data;
-    } else if (Array.isArray(response.data)) {
-      // Ou pode retornar o array diretamente
-      ambulancias.value = response.data;
-    } else {
-      console.warn("A resposta da API de ambulâncias não é um array:", response.data);
-      ambulancias.value = [];
+    const [ambulanciasRes, hospitaisRes] = await Promise.all([
+      api.get('/ambulancias'),
+      api.get('/hospitais')
+    ]);
+
+    // Processa ambulâncias
+    if (ambulanciasRes.data && Array.isArray(ambulanciasRes.data.data)) {
+      ambulancias.value = ambulanciasRes.data.data;
+    } else if (Array.isArray(ambulanciasRes.data)) {
+      ambulancias.value = ambulanciasRes.data;
     }
+
+    // Processa hospitais
+    if (hospitaisRes.data && Array.isArray(hospitaisRes.data.data)) {
+      hospitais.value = hospitaisRes.data.data;
+    } else if (Array.isArray(hospitaisRes.data)) {
+      hospitais.value = hospitaisRes.data;
+    }
+
   } catch (error) {
-    console.error('Erro ao buscar ambulâncias:', error);
-    ambulancias.value = []; // Garante que seja um array em caso de erro
+    console.error('Erro ao carregar dados iniciais:', error);
+    ambulancias.value = [];
+    hospitais.value = [];
   } finally {
     loading.value = false;
   }
 };
 
-onMounted(fetchAmbulancias);
+onMounted(fetchData);
 
 const filteredAmbulancias = computed(() => {
     return ambulancias.value.filter(amb => {
@@ -309,24 +329,14 @@ const saveAmbulancia = async () => {
   saving.value = true;
 
   try {
-    // Adiciona o ID do gabinete provincial a partir do usuário logado.
-    // Este campo é obrigatório pela API.
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (!user || !user.gabinete_provincial_id) {
-        throw new Error('O seu perfil de administrador não tem um gabinete provincial associado. Contacte o suporte.');
-    }
-
-    const dataToSend = {
-      ...currentAmbulancia.value,
-      gabinete_provincial_id: user.gabinete_provincial_id,
-    };
+    const dataToSend = currentAmbulancia.value;
 
     if (isEditMode.value) {
-      await api.put(`/ambulancias/${currentAmbulancia.value.id}`, dataToSend);
+      await api.put(`/ambulancias/${dataToSend.id}`, dataToSend);
     } else {
       await api.post('/ambulancias', dataToSend);
     }
-    await fetchAmbulancias();
+    await fetchData();
     closeModal();
   } catch (error) {
     console.error('Erro ao salvar ambulância:', error);
@@ -336,10 +346,9 @@ const saveAmbulancia = async () => {
         // Aqui você pode adicionar uma notificação para o usuário com o erro específico
         alert('Erro de validação: ' + (error.response.data.message || 'Verifique os dados e tente novamente.'));
     } else {
-      // Usa a mensagem de erro personalizada se o gabinete não for encontrado
+      // Usa a mensagem de erro personalizada se o hospital não for encontrado
       alert(error.message);
     }
-    // Adicionar notificação de erro para o usuário
   } finally {
     saving.value = false;
   }
@@ -351,7 +360,7 @@ const confirmDelete = async () => {
 
     try {
         await api.delete(`/ambulancias/${ambulanciaToDelete.value.id}`);
-        await fetchAmbulancias();
+        await fetchData();
         closeDeleteModal();
     } catch (error) {
         console.error('Erro ao excluir ambulância:', error);
